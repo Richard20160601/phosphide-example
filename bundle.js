@@ -61,17 +61,18 @@
 	   phosphide.loadPlugins(new di.Container(), [
 	    __webpack_require__(7),
 	    __webpack_require__(54),
+	    __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"phosphide/lib/commandpalette/plugin\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())),
 	    __webpack_require__(55),
 	    __webpack_require__(56),
 	    __webpack_require__(57),
-	    __webpack_require__(58)
+	    __webpack_require__(58),
+	    __webpack_require__(59)
 	  ]).then(function() {
 	    console.log('loading finished');
 	  });
 	}
 
 	window.onload = main;
-
 
 
 /***/ },
@@ -6746,6 +6747,19 @@
 	var DockPanel = (function (_super) {
 	    __extends(DockPanel, _super);
 	    /**
+	     * Ensure the specified content widget is selected.
+	     *
+	     * @param widget - The content widget of interest.
+	     *
+	     * #### Notes
+	     * If the widget is not contained in a dock panel, or is already
+	     * the selected tab in its respective tab panel, this is a no-op.
+	     */
+	    // TODO figure out the right API for this.
+	    // static select(widget: Widget): void {
+	    //   selectWidget(widget);
+	    // }
+	    /**
 	     * Construct a new dock panel.
 	     */
 	    function DockPanel() {
@@ -10826,7 +10840,8 @@
 	            return;
 	        }
 	        // Ignore the click if it was not on a close icon.
-	        var icon = this.constructor.tabCloseIcon(this._tabs[i]);
+	        var constructor = this.constructor;
+	        var icon = constructor.tabCloseIcon(this._tabs[i]);
 	        if (!icon.contains(event.target)) {
 	            return;
 	        }
@@ -10856,7 +10871,8 @@
 	        event.preventDefault();
 	        event.stopPropagation();
 	        // Ignore the press if it was on a close icon.
-	        var icon = this.constructor.tabCloseIcon(this._tabs[i]);
+	        var constructor = this.constructor;
+	        var icon = constructor.tabCloseIcon(this._tabs[i]);
 	        if (icon.contains(event.target)) {
 	            return;
 	        }
@@ -11251,8 +11267,9 @@
 	        _super.call(this);
 	        this._currentWidget = null;
 	        this.addClass(TAB_PANEL_CLASS);
-	        this._tabBar = this.constructor.createTabBar();
-	        this._stackedPanel = this.constructor.createStackedPanel();
+	        var constructor = this.constructor;
+	        this._tabBar = constructor.createTabBar();
+	        this._stackedPanel = constructor.createStackedPanel();
 	        this._tabBar.tabMoved.connect(this._onTabMoved, this);
 	        this._tabBar.currentChanged.connect(this._onCurrentChanged, this);
 	        this._tabBar.tabCloseRequested.connect(this._onTabCloseRequested, this);
@@ -11999,6 +12016,207 @@
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
+	var phosphor_disposable_1 = __webpack_require__(13);
+	var phosphor_signaling_1 = __webpack_require__(26);
+	var index_1 = __webpack_require__(4);
+	/**
+	 * Register the plugin contributions.
+	 *
+	 * @param container - The di container for type registration.
+	 *
+	 * #### Notes
+	 * This is called automatically when the plugin is loaded.
+	 */
+	function register(container) {
+	    container.register(index_1.ICommandRegistry, CommandRegistry);
+	}
+	exports.register = register;
+	/**
+	 * A concrete implementation of ICommandRegistry.
+	 */
+	var CommandRegistry = (function () {
+	    /**
+	     * Construct a new command registry instance.
+	     */
+	    function CommandRegistry() {
+	        this._map = Object.create(null);
+	    }
+	    /**
+	     * Create a new command registry instance.
+	     */
+	    CommandRegistry.create = function () {
+	        return new CommandRegistry();
+	    };
+	    Object.defineProperty(CommandRegistry.prototype, "commandsAdded", {
+	        /**
+	         * A signal emitted when commands are added to the registry.
+	         */
+	        get: function () {
+	            return CommandRegistryPrivate.commandsAddedSignal.bind(this);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(CommandRegistry.prototype, "commandsRemoved", {
+	        /**
+	         * A signal emitted when commands are removed from the registry.
+	         */
+	        get: function () {
+	            return CommandRegistryPrivate.commandsRemovedSignal.bind(this);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     * List the ids of the currently registered commands.
+	     *
+	     * @returns A new array of the registered command ids.
+	     */
+	    CommandRegistry.prototype.list = function () {
+	        return Object.keys(this._map);
+	    };
+	    /**
+	     * Test whether a command with a specific id is registered.
+	     *
+	     * @param id - The id of the command of interest.
+	     *
+	     * @returns `true` if the command is registered, `false` otherwise.
+	     */
+	    CommandRegistry.prototype.has = function (id) {
+	        return id in this._map;
+	    };
+	    /**
+	     * Lookup a command with a specific id.
+	     *
+	     * @param id - The id of the command of interest.
+	     *
+	     * @returns The command with the specified id, or `undefined`.
+	     */
+	    CommandRegistry.prototype.get = function (id) {
+	        return this._map[id];
+	    };
+	    /**
+	     * Add commands to the registry.
+	     *
+	     * @param items - The command items to add to the registry.
+	     *
+	     * @returns A disposable which will remove the added commands.
+	     *
+	     * #### Notes
+	     * If the `id` for a command is already registered, a warning will be
+	     * logged to the console and that specific command will be ignored.
+	     */
+	    CommandRegistry.prototype.add = function (items) {
+	        var _this = this;
+	        var added = [];
+	        for (var _i = 0; _i < items.length; _i++) {
+	            var _a = items[_i], id = _a.id, command = _a.command;
+	            if (id in this._map) {
+	                console.warn("Command '" + id + "' is already registered.");
+	            }
+	            else {
+	                added.push(id);
+	                this._map[id] = command;
+	            }
+	        }
+	        if (added.length === 0) {
+	            return new phosphor_disposable_1.DisposableDelegate(null);
+	        }
+	        this.commandsAdded.emit(added.slice());
+	        return new phosphor_disposable_1.DisposableDelegate(function () {
+	            for (var _i = 0; _i < added.length; _i++) {
+	                var id = added[_i];
+	                delete _this._map[id];
+	            }
+	            _this.commandsRemoved.emit(added.slice());
+	        });
+	    };
+	    /**
+	     * A convenience method to execute a registered command.
+	     *
+	     * @param id - The id of the command to execute.
+	     *
+	     * @param args - The arguments object to pass to the command. This
+	     *   may be `null` if the command does not require arguments.
+	     *
+	     * #### Notes
+	     * If the command is not registered or is not enabled, a warning will
+	     * be logged to the console. If the command throws an exception, the
+	     * exception will be propagated to the caller.
+	     *
+	     * If more control over execution is required, the command should be
+	     * retrieved from the registry and used directly.
+	     */
+	    CommandRegistry.prototype.execute = function (id, args) {
+	        var cmd = this._map[id];
+	        if (!cmd) {
+	            console.warn("Command '" + id + "' is not registered.");
+	            return;
+	        }
+	        if (!cmd.isEnabled()) {
+	            console.warn("Command '" + id + "' is not enabled.");
+	            return;
+	        }
+	        cmd.execute(args);
+	    };
+	    /**
+	     * A convenience method to safely execute a registered command.
+	     *
+	     * @param id - The id of the command to execute.
+	     *
+	     * @param args - The arguments object to pass to the command. This
+	     *   may be `null` if the command does not require arguments.
+	     *
+	     * #### Notes
+	     * If the command is not registered or is not enabled, a warning will
+	     * be logged to the console. If the command throws an exception, the
+	     * exception will be logged to the console.
+	     *
+	     * If more control over execution is required, the command should be
+	     * retrieved from the registry and used directly.
+	     */
+	    CommandRegistry.prototype.safeExecute = function (id, args) {
+	        try {
+	            this.execute(id, args);
+	        }
+	        catch (err) {
+	            console.error(err);
+	        }
+	    };
+	    /**
+	     * The dependencies required by the command registry.
+	     */
+	    CommandRegistry.requires = [];
+	    return CommandRegistry;
+	})();
+	/**
+	 * The namespace for the `CommandRegistry` class private data.
+	 */
+	var CommandRegistryPrivate;
+	(function (CommandRegistryPrivate) {
+	    /**
+	     * A signal emitted when commands are added to the registry.
+	     */
+	    CommandRegistryPrivate.commandsAddedSignal = new phosphor_signaling_1.Signal();
+	    /**
+	     * A signal emitted when commands are removed from the registry.
+	     */
+	    CommandRegistryPrivate.commandsRemovedSignal = new phosphor_signaling_1.Signal();
+	})(CommandRegistryPrivate || (CommandRegistryPrivate = {}));
+
+
+/***/ },
+/* 55 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2015, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
 	var phosphide_1 = __webpack_require__(1);
 	var phosphor_widget_1 = __webpack_require__(24);
 	function resolve(container) {
@@ -12024,7 +12242,7 @@
 
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12060,7 +12278,7 @@
 
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12096,7 +12314,7 @@
 
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12132,7 +12350,7 @@
 
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12148,11 +12366,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var CodeMirror = __webpack_require__(59);
+	var CodeMirror = __webpack_require__(60);
 	var phosphide_1 = __webpack_require__(1);
 	var phosphor_widget_1 = __webpack_require__(24);
-	__webpack_require__(60);
-	__webpack_require__(62);
+	__webpack_require__(61);
+	__webpack_require__(63);
 	function resolve(container) {
 	    return container.resolve(EditorHandler).then(function (handler) { handler.run(); });
 	}
@@ -12212,7 +12430,7 @@
 
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -21105,13 +21323,13 @@
 
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(61);
+	var content = __webpack_require__(62);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(17)(content, {});
@@ -21131,7 +21349,7 @@
 	}
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(16)();
@@ -21145,7 +21363,7 @@
 
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -21155,7 +21373,7 @@
 
 	(function(mod) {
 	  if (true) // CommonJS
-	    mod(__webpack_require__(59));
+	    mod(__webpack_require__(60));
 	  else if (typeof define == "function" && define.amd) // AMD
 	    define(["../../lib/codemirror"], mod);
 	  else // Plain browser env
