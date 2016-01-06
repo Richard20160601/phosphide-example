@@ -63,10 +63,10 @@
 	    __webpack_require__(54),
 	    __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"phosphide/lib/commandpalette/plugin\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())),
 	    __webpack_require__(55),
-	    __webpack_require__(56),
 	    __webpack_require__(57),
 	    __webpack_require__(58),
-	    __webpack_require__(59)
+	    __webpack_require__(59),
+	    __webpack_require__(60)
 	  ]).then(function() {
 	    console.log('loading finished');
 	  });
@@ -12218,25 +12218,38 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
+	var phosphor_command_1 = __webpack_require__(56);
 	var phosphor_widget_1 = __webpack_require__(24);
 	function resolve(container) {
-	    return container.resolve(RedHandler).then(function (handler) { handler.run(); });
+	    return container.resolve(RedHandler).then(function (handler) {
+	        handler.run();
+	    });
 	}
 	exports.resolve = resolve;
 	var RedHandler = (function () {
-	    function RedHandler(shell) {
+	    function RedHandler(shell, commands) {
 	        this._shell = shell;
+	        this._commandRegistry = commands;
 	    }
-	    RedHandler.create = function (shell) {
-	        return new RedHandler(shell);
+	    RedHandler.create = function (shell, commands) {
+	        return new RedHandler(shell, commands);
 	    };
 	    RedHandler.prototype.run = function () {
 	        var widget = new phosphor_widget_1.Widget();
 	        widget.addClass('red-content');
 	        widget.title.text = 'Red';
 	        this._shell.addToRightArea(widget, { rank: 30 });
+	        var commands = [
+	            {
+	                id: 'demo:red',
+	                command: new phosphor_command_1.DelegateCommand(function () {
+	                    console.log('Red Command invoked');
+	                })
+	            }
+	        ];
+	        this._commandRegistry.add(commands);
 	    };
-	    RedHandler.requires = [phosphide_1.IAppShell];
+	    RedHandler.requires = [phosphide_1.IAppShell, phosphide_1.ICommandRegistry];
 	    return RedHandler;
 	})();
 
@@ -12253,29 +12266,175 @@
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
-	var phosphide_1 = __webpack_require__(1);
-	var phosphor_widget_1 = __webpack_require__(24);
-	function resolve(container) {
-	    return container.resolve(BlueHandler).then(function (handler) { handler.run(); });
-	}
-	exports.resolve = resolve;
-	var BlueHandler = (function () {
-	    function BlueHandler(shell) {
-	        this._shell = shell;
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var phosphor_signaling_1 = __webpack_require__(26);
+	/**
+	 * An abstract base class for implementing concrete commands.
+	 */
+	var Command = (function () {
+	    function Command() {
 	    }
-	    BlueHandler.create = function (shell) {
-	        return new BlueHandler(shell);
+	    Object.defineProperty(Command.prototype, "changed", {
+	        /**
+	         * A signal emitted when the command's state changes.
+	         *
+	         * #### Notes
+	         * This should be emitted by a subclass as necessary.
+	         *
+	         * This is a pure delegate to the [[changedSignal]].
+	         */
+	        get: function () {
+	            return Command.changedSignal.bind(this);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     * Test whether the command is enabled.
+	     *
+	     * @returns `true` if the command is enabled, `false` otherwise.
+	     *
+	     * #### Notes
+	     * A subclass may reimplement this method as needed. If the state
+	     * changes at runtime, the [[changed]] signal should be emitted.
+	     *
+	     * The default implementation of this method returns `true`.
+	     */
+	    Command.prototype.isEnabled = function () {
+	        return true;
 	    };
-	    BlueHandler.prototype.run = function () {
-	        var widget = new phosphor_widget_1.Widget();
-	        widget.addClass('blue-content');
-	        widget.title.text = 'Blue';
-	        this._shell.addToLeftArea(widget, { rank: 10 });
+	    /**
+	     * Test whether the command is checked.
+	     *
+	     * @returns `true` if the command is checked, `false` otherwise.
+	     *
+	     * #### Notes
+	     * A subclass may reimplement this method as needed. If the state
+	     * changes at runtime, the [[changed]] signal should be emitted.
+	     *
+	     * The default implementation of this method returns `false`.
+	     */
+	    Command.prototype.isChecked = function () {
+	        return false;
 	    };
-	    BlueHandler.requires = [phosphide_1.IAppShell];
-	    return BlueHandler;
+	    /**
+	     * A signal emitted when the command's state changes.
+	     *
+	     * **See also:** [[changed]]
+	     */
+	    Command.changedSignal = new phosphor_signaling_1.Signal();
+	    return Command;
 	})();
-
+	exports.Command = Command;
+	/**
+	 * A concrete implementation of [[ICommand]].
+	 *
+	 * A `DelegateCommand` wraps a function to facilitate the creation of
+	 * simple commands without requiring subclassing or extra boilerplate.
+	 */
+	var DelegateCommand = (function (_super) {
+	    __extends(DelegateCommand, _super);
+	    /**
+	     * Construct a new delegate command.
+	     *
+	     * @param execute - The function which executes the command logic.
+	     */
+	    function DelegateCommand(execute) {
+	        _super.call(this);
+	        this._enabled = true;
+	        this._checked = false;
+	        this._execute = execute;
+	    }
+	    Object.defineProperty(DelegateCommand.prototype, "enabled", {
+	        /**
+	         * Get the enabled state of the delegate command.
+	         */
+	        get: function () {
+	            return this._enabled;
+	        },
+	        /**
+	         * Set the enabled state of the delegate command.
+	         *
+	         * #### Notes
+	         * This will emit the [[changed]] signal if the state changes.
+	         */
+	        set: function (value) {
+	            if (this._enabled === value) {
+	                return;
+	            }
+	            this._enabled = value;
+	            this.changed.emit(void 0);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(DelegateCommand.prototype, "checked", {
+	        /**
+	         * Get the checked state of the delegate command.
+	         */
+	        get: function () {
+	            return this._checked;
+	        },
+	        /**
+	         * Set the checked state of the delegate command.
+	         *
+	         * #### Notes
+	         * This will emit the [[changed]] signal if the state changes.
+	         */
+	        set: function (value) {
+	            if (this._checked === value) {
+	                return;
+	            }
+	            this._checked = value;
+	            this.changed.emit(void 0);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     * Test whether the command is enabled.
+	     *
+	     * @returns `true` if the command is enabled, `false` otherwise.
+	     *
+	     * #### Notes
+	     * This returns the command's [[enabled]] state.
+	     */
+	    DelegateCommand.prototype.isEnabled = function () {
+	        return this._enabled;
+	    };
+	    /**
+	     * Test whether the command is checked.
+	     *
+	     * @returns `true` if the command is checked, `false` otherwise.
+	     *
+	     * #### Notes
+	     * This returns the command's [[checked]] state.
+	     */
+	    DelegateCommand.prototype.isChecked = function () {
+	        return this._checked;
+	    };
+	    /**
+	     * Execute the command with the specified arguments.
+	     *
+	     * @param args - The arguments for the command. The args should be
+	     *   simple JSON types. If the command does not require arguments,
+	     *   this may be `null`.
+	     *
+	     * #### Notes
+	     * Calling `execute` when `isEnabled` returns `false` will result
+	     * in undefined behavior.
+	     */
+	    DelegateCommand.prototype.execute = function (args) {
+	        this._execute.call(void 0, args);
+	    };
+	    return DelegateCommand;
+	})(Command);
+	exports.DelegateCommand = DelegateCommand;
+	//# sourceMappingURL=index.js.map
 
 /***/ },
 /* 57 */
@@ -12290,26 +12449,39 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
+	var phosphor_command_1 = __webpack_require__(56);
 	var phosphor_widget_1 = __webpack_require__(24);
 	function resolve(container) {
-	    return container.resolve(GreenHandler).then(function (handler) { handler.run(); });
+	    return container.resolve(BlueHandler).then(function (handler) {
+	        handler.run();
+	    });
 	}
 	exports.resolve = resolve;
-	var GreenHandler = (function () {
-	    function GreenHandler(shell) {
+	var BlueHandler = (function () {
+	    function BlueHandler(shell, commands) {
 	        this._shell = shell;
+	        this._commandRegistry = commands;
 	    }
-	    GreenHandler.create = function (shell) {
-	        return new GreenHandler(shell);
+	    BlueHandler.create = function (shell, commands) {
+	        return new BlueHandler(shell, commands);
 	    };
-	    GreenHandler.prototype.run = function () {
+	    BlueHandler.prototype.run = function () {
 	        var widget = new phosphor_widget_1.Widget();
-	        widget.addClass('green-content');
-	        widget.title.text = 'Green';
-	        this._shell.addToRightArea(widget, { rank: 40 });
+	        widget.addClass('blue-content');
+	        widget.title.text = 'Blue';
+	        this._shell.addToLeftArea(widget, { rank: 10 });
+	        var commands = [
+	            {
+	                id: 'demo:blue',
+	                command: new phosphor_command_1.DelegateCommand(function () {
+	                    console.log('Blue Command invoked');
+	                })
+	            }
+	        ];
+	        this._commandRegistry.add(commands);
 	    };
-	    GreenHandler.requires = [phosphide_1.IAppShell];
-	    return GreenHandler;
+	    BlueHandler.requires = [phosphide_1.IAppShell, phosphide_1.ICommandRegistry];
+	    return BlueHandler;
 	})();
 
 
@@ -12326,26 +12498,39 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
+	var phosphor_command_1 = __webpack_require__(56);
 	var phosphor_widget_1 = __webpack_require__(24);
 	function resolve(container) {
-	    return container.resolve(YellowHandler).then(function (handler) { handler.run(); });
+	    return container.resolve(GreenHandler).then(function (handler) {
+	        handler.run();
+	    });
 	}
 	exports.resolve = resolve;
-	var YellowHandler = (function () {
-	    function YellowHandler(shell) {
+	var GreenHandler = (function () {
+	    function GreenHandler(shell, commands) {
 	        this._shell = shell;
+	        this._commandRegistry = commands;
 	    }
-	    YellowHandler.create = function (shell) {
-	        return new YellowHandler(shell);
+	    GreenHandler.create = function (shell, commands) {
+	        return new GreenHandler(shell, commands);
 	    };
-	    YellowHandler.prototype.run = function () {
+	    GreenHandler.prototype.run = function () {
 	        var widget = new phosphor_widget_1.Widget();
-	        widget.addClass('yellow-content');
-	        widget.title.text = 'Yellow';
-	        this._shell.addToLeftArea(widget, { rank: 20 });
+	        widget.addClass('green-content');
+	        widget.title.text = 'Green';
+	        this._shell.addToRightArea(widget, { rank: 40 });
+	        var commands = [
+	            {
+	                id: 'demo:green',
+	                command: new phosphor_command_1.DelegateCommand(function () {
+	                    console.log('Green Command invoked');
+	                })
+	            }
+	        ];
+	        this._commandRegistry.add(commands);
 	    };
-	    YellowHandler.requires = [phosphide_1.IAppShell];
-	    return YellowHandler;
+	    GreenHandler.requires = [phosphide_1.IAppShell, phosphide_1.ICommandRegistry];
+	    return GreenHandler;
 	})();
 
 
@@ -12361,16 +12546,65 @@
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
+	var phosphide_1 = __webpack_require__(1);
+	var phosphor_command_1 = __webpack_require__(56);
+	var phosphor_widget_1 = __webpack_require__(24);
+	function resolve(container) {
+	    return container.resolve(YellowHandler).then(function (handler) {
+	        handler.run();
+	    });
+	}
+	exports.resolve = resolve;
+	var YellowHandler = (function () {
+	    function YellowHandler(shell, commands) {
+	        this._shell = shell;
+	        this._commandRegistry = commands;
+	    }
+	    YellowHandler.create = function (shell, commands) {
+	        return new YellowHandler(shell, commands);
+	    };
+	    YellowHandler.prototype.run = function () {
+	        var widget = new phosphor_widget_1.Widget();
+	        widget.addClass('yellow-content');
+	        widget.title.text = 'Yellow';
+	        this._shell.addToLeftArea(widget, { rank: 20 });
+	        var commands = [
+	            {
+	                id: 'demo:yellow',
+	                command: new phosphor_command_1.DelegateCommand(function () {
+	                    console.log('Yellow Command invoked');
+	                })
+	            }
+	        ];
+	        this._commandRegistry.add(commands);
+	    };
+	    YellowHandler.requires = [phosphide_1.IAppShell, phosphide_1.ICommandRegistry];
+	    return YellowHandler;
+	})();
+
+
+/***/ },
+/* 60 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2015, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
 	var __extends = (this && this.__extends) || function (d, b) {
 	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var CodeMirror = __webpack_require__(60);
+	var CodeMirror = __webpack_require__(61);
 	var phosphide_1 = __webpack_require__(1);
 	var phosphor_widget_1 = __webpack_require__(24);
-	__webpack_require__(61);
-	__webpack_require__(63);
+	__webpack_require__(62);
+	__webpack_require__(64);
 	function resolve(container) {
 	    return container.resolve(EditorHandler).then(function (handler) { handler.run(); });
 	}
@@ -12430,7 +12664,7 @@
 
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -21323,13 +21557,13 @@
 
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(62);
+	var content = __webpack_require__(63);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(17)(content, {});
@@ -21349,7 +21583,7 @@
 	}
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(16)();
@@ -21363,7 +21597,7 @@
 
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -21373,7 +21607,7 @@
 
 	(function(mod) {
 	  if (true) // CommonJS
-	    mod(__webpack_require__(60));
+	    mod(__webpack_require__(61));
 	  else if (typeof define == "function" && define.amd) // AMD
 	    define(["../../lib/codemirror"], mod);
 	  else // Plain browser env
