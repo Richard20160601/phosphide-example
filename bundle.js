@@ -58,15 +58,15 @@
 
 
 	function main() {
-	   phosphide.loadPlugins(new di.Container(), [
-	    __webpack_require__(7),
-	    __webpack_require__(54),
-	    __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"phosphide/lib/commandpalette/plugin\""); e.code = 'MODULE_NOT_FOUND'; throw e; }())),
+	  phosphide.loadPlugins(new di.Container(), [
+	    __webpack_require__(8),
 	    __webpack_require__(55),
-	    __webpack_require__(57),
-	    __webpack_require__(58),
-	    __webpack_require__(59),
-	    __webpack_require__(60)
+	    __webpack_require__(56),
+	    __webpack_require__(79),
+	    __webpack_require__(80),
+	    __webpack_require__(81),
+	    __webpack_require__(82),
+	    __webpack_require__(83)
 	  ]).then(function() {
 	    console.log('loading finished');
 	  });
@@ -80,7 +80,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
 	|
 	| Distributed under the terms of the BSD 3-Clause License.
 	|
@@ -93,6 +93,7 @@
 	__export(__webpack_require__(2));
 	__export(__webpack_require__(4));
 	__export(__webpack_require__(5));
+	__export(__webpack_require__(6));
 
 
 /***/ },
@@ -100,7 +101,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
 	|
 	| Distributed under the terms of the BSD 3-Clause License.
 	|
@@ -400,7 +401,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
 	|
 	| Distributed under the terms of the BSD 3-Clause License.
 	|
@@ -419,14 +420,33 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
 	|
 	| Distributed under the terms of the BSD 3-Clause License.
 	|
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
-	var phosphor_properties_1 = __webpack_require__(6);
+	var phosphor_di_1 = __webpack_require__(3);
+	/**
+	 * The dependency token for the `ICommandPalette` interface.
+	 */
+	exports.ICommandPalette = new phosphor_di_1.Token('phosphide.ICommandPalette');
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
+	var phosphor_properties_1 = __webpack_require__(7);
 	/**
 	 * Load a collection of plugins for the application.
 	 *
@@ -488,7 +508,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	/*-----------------------------------------------------------------------------
@@ -697,11 +717,11 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
 	|
 	| Distributed under the terms of the BSD 3-Clause License.
 	|
@@ -713,16 +733,16 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var arrays = __webpack_require__(8);
-	var phosphor_boxpanel_1 = __webpack_require__(9);
-	var phosphor_dockpanel_1 = __webpack_require__(34);
-	var phosphor_panel_1 = __webpack_require__(22);
-	var phosphor_splitpanel_1 = __webpack_require__(36);
-	var phosphor_stackedpanel_1 = __webpack_require__(41);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var arrays = __webpack_require__(9);
+	var phosphor_boxpanel_1 = __webpack_require__(10);
+	var phosphor_dockpanel_1 = __webpack_require__(35);
+	var phosphor_panel_1 = __webpack_require__(23);
+	var phosphor_splitpanel_1 = __webpack_require__(37);
+	var phosphor_stackedpanel_1 = __webpack_require__(42);
+	var phosphor_widget_1 = __webpack_require__(25);
 	var index_1 = __webpack_require__(2);
-	var sidebar_1 = __webpack_require__(51);
-	__webpack_require__(52);
+	var sidebar_1 = __webpack_require__(52);
+	__webpack_require__(53);
 	// TODO - need better solution for storing these class names
 	/**
 	 * The class name added to AppShell instances.
@@ -800,11 +820,7 @@
 	     * Create a new application shell instance.
 	     */
 	    AppShell.create = function () {
-	        var shell = new AppShell();
-	        var update = function () { shell.update(); };
-	        window.addEventListener('resize', update);
-	        shell.attach(document.body);
-	        return shell;
+	        return new AppShell();
 	    };
 	    /**
 	     * Add a widget to the top content area.
@@ -892,6 +908,7 @@
 	     */
 	    SideBarHandler.prototype.addWidget = function (widget, rank) {
 	        widget.parent = null;
+	        widget.hide();
 	        var item = { widget: widget, rank: rank };
 	        var index = this._findInsertIndex(item);
 	        arrays.insert(this._items, index, item);
@@ -950,7 +967,7 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports) {
 
 	/*-----------------------------------------------------------------------------
@@ -1638,7 +1655,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -1652,12 +1669,12 @@
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
-	__export(__webpack_require__(10));
-	__export(__webpack_require__(33));
+	__export(__webpack_require__(11));
+	__export(__webpack_require__(34));
 
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -1673,13 +1690,13 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var arrays = __webpack_require__(8);
-	var phosphor_boxengine_1 = __webpack_require__(11);
-	var phosphor_domutil_1 = __webpack_require__(12);
-	var phosphor_messaging_1 = __webpack_require__(18);
-	var phosphor_properties_1 = __webpack_require__(6);
-	var phosphor_panel_1 = __webpack_require__(22);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var arrays = __webpack_require__(9);
+	var phosphor_boxengine_1 = __webpack_require__(12);
+	var phosphor_domutil_1 = __webpack_require__(13);
+	var phosphor_messaging_1 = __webpack_require__(19);
+	var phosphor_properties_1 = __webpack_require__(7);
+	var phosphor_panel_1 = __webpack_require__(23);
+	var phosphor_widget_1 = __webpack_require__(25);
 	/**
 	 * The class name added to left-to-right box layout parents.
 	 */
@@ -2231,7 +2248,7 @@
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	/*-----------------------------------------------------------------------------
@@ -2565,7 +2582,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -2576,8 +2593,8 @@
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
-	var phosphor_disposable_1 = __webpack_require__(13);
-	__webpack_require__(14);
+	var phosphor_disposable_1 = __webpack_require__(14);
+	__webpack_require__(15);
 	/**
 	 * The class name added to the document body during cursor override.
 	 */
@@ -2737,7 +2754,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	/*-----------------------------------------------------------------------------
@@ -2884,16 +2901,16 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(15);
+	var content = __webpack_require__(16);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(17)(content, {});
+	var update = __webpack_require__(18)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -2910,10 +2927,10 @@
 	}
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(16)();
+	exports = module.exports = __webpack_require__(17)();
 	// imports
 
 
@@ -2924,7 +2941,7 @@
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	/*
@@ -2980,7 +2997,7 @@
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -3234,7 +3251,7 @@
 
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate) {/*-----------------------------------------------------------------------------
@@ -3245,7 +3262,7 @@
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
-	var phosphor_queue_1 = __webpack_require__(21);
+	var phosphor_queue_1 = __webpack_require__(22);
 	/**
 	 * A message which can be sent or posted to a message handler.
 	 *
@@ -3651,13 +3668,13 @@
 	    return MessageDispatcher;
 	})();
 	//# sourceMappingURL=index.js.map
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20).setImmediate))
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(20).nextTick;
+	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(21).nextTick;
 	var apply = Function.prototype.apply;
 	var slice = Array.prototype.slice;
 	var immediateIds = {};
@@ -3733,10 +3750,10 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19).setImmediate, __webpack_require__(19).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20).setImmediate, __webpack_require__(20).clearImmediate))
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -3833,7 +3850,7 @@
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports) {
 
 	/*-----------------------------------------------------------------------------
@@ -4193,7 +4210,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -4207,12 +4224,12 @@
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
-	__export(__webpack_require__(23));
-	__export(__webpack_require__(32));
+	__export(__webpack_require__(24));
+	__export(__webpack_require__(33));
 
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -4228,9 +4245,9 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var arrays = __webpack_require__(8);
-	var phosphor_messaging_1 = __webpack_require__(18);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var arrays = __webpack_require__(9);
+	var phosphor_messaging_1 = __webpack_require__(19);
+	var phosphor_widget_1 = __webpack_require__(25);
 	/**
 	 * A concrete layout implementation suitable for many use cases.
 	 *
@@ -4452,7 +4469,7 @@
 
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -4466,14 +4483,14 @@
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
-	__export(__webpack_require__(25));
-	__export(__webpack_require__(29));
-	__export(__webpack_require__(27));
-	__webpack_require__(30);
+	__export(__webpack_require__(26));
+	__export(__webpack_require__(30));
+	__export(__webpack_require__(28));
+	__webpack_require__(31);
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -4489,10 +4506,10 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var phosphor_messaging_1 = __webpack_require__(18);
-	var phosphor_properties_1 = __webpack_require__(6);
-	var phosphor_signaling_1 = __webpack_require__(26);
-	var widget_1 = __webpack_require__(27);
+	var phosphor_messaging_1 = __webpack_require__(19);
+	var phosphor_properties_1 = __webpack_require__(7);
+	var phosphor_signaling_1 = __webpack_require__(27);
+	var widget_1 = __webpack_require__(28);
 	/**
 	 * The abstract base class of all Phosphor layouts.
 	 *
@@ -4754,7 +4771,7 @@
 
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports) {
 
 	/*-----------------------------------------------------------------------------
@@ -5208,7 +5225,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -5224,11 +5241,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var phosphor_messaging_1 = __webpack_require__(18);
-	var phosphor_nodewrapper_1 = __webpack_require__(28);
-	var phosphor_properties_1 = __webpack_require__(6);
-	var phosphor_signaling_1 = __webpack_require__(26);
-	var title_1 = __webpack_require__(29);
+	var phosphor_messaging_1 = __webpack_require__(19);
+	var phosphor_nodewrapper_1 = __webpack_require__(29);
+	var phosphor_properties_1 = __webpack_require__(7);
+	var phosphor_signaling_1 = __webpack_require__(27);
+	var title_1 = __webpack_require__(30);
 	/**
 	 * The class name added to Widget instances.
 	 */
@@ -6017,7 +6034,7 @@
 
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports) {
 
 	/*-----------------------------------------------------------------------------
@@ -6149,7 +6166,7 @@
 
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -6160,8 +6177,8 @@
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
-	var phosphor_properties_1 = __webpack_require__(6);
-	var phosphor_signaling_1 = __webpack_require__(26);
+	var phosphor_properties_1 = __webpack_require__(7);
+	var phosphor_signaling_1 = __webpack_require__(27);
 	/**
 	 * An object which holds data related to a widget title.
 	 *
@@ -6332,16 +6349,16 @@
 
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(31);
+	var content = __webpack_require__(32);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(17)(content, {});
+	var update = __webpack_require__(18)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -6358,10 +6375,10 @@
 	}
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(16)();
+	exports = module.exports = __webpack_require__(17)();
 	// imports
 
 
@@ -6372,7 +6389,7 @@
 
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -6388,8 +6405,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var phosphor_widget_1 = __webpack_require__(24);
-	var layout_1 = __webpack_require__(23);
+	var phosphor_widget_1 = __webpack_require__(25);
+	var layout_1 = __webpack_require__(24);
 	/**
 	 * The class name added to Panel instances.
 	 */
@@ -6483,7 +6500,7 @@
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -6499,8 +6516,8 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var phosphor_panel_1 = __webpack_require__(22);
-	var layout_1 = __webpack_require__(10);
+	var phosphor_panel_1 = __webpack_require__(23);
+	var layout_1 = __webpack_require__(11);
 	/**
 	 * The class name added to BoxPanel instances.
 	 */
@@ -6646,7 +6663,7 @@
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -6662,16 +6679,16 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var arrays = __webpack_require__(8);
-	var phosphor_domutil_1 = __webpack_require__(12);
-	var phosphor_dragdrop_1 = __webpack_require__(35);
-	var phosphor_nodewrapper_1 = __webpack_require__(28);
-	var phosphor_properties_1 = __webpack_require__(6);
-	var phosphor_splitpanel_1 = __webpack_require__(36);
-	var phosphor_stackedpanel_1 = __webpack_require__(41);
-	var phosphor_tabs_1 = __webpack_require__(44);
-	var phosphor_widget_1 = __webpack_require__(24);
-	__webpack_require__(49);
+	var arrays = __webpack_require__(9);
+	var phosphor_domutil_1 = __webpack_require__(13);
+	var phosphor_dragdrop_1 = __webpack_require__(36);
+	var phosphor_nodewrapper_1 = __webpack_require__(29);
+	var phosphor_properties_1 = __webpack_require__(7);
+	var phosphor_splitpanel_1 = __webpack_require__(37);
+	var phosphor_stackedpanel_1 = __webpack_require__(42);
+	var phosphor_tabs_1 = __webpack_require__(45);
+	var phosphor_widget_1 = __webpack_require__(25);
+	__webpack_require__(50);
 	// TODO - need better solution for storing these class names
 	/**
 	 * The class name added to DockPanel instances.
@@ -7862,7 +7879,7 @@
 
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -7873,7 +7890,7 @@
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
-	var phosphor_domutil_1 = __webpack_require__(12);
+	var phosphor_domutil_1 = __webpack_require__(13);
 	/**
 	 * The class name added to drag image nodes.
 	 */
@@ -8651,7 +8668,7 @@
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -8665,13 +8682,13 @@
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
-	__export(__webpack_require__(37));
 	__export(__webpack_require__(38));
-	__webpack_require__(39);
+	__export(__webpack_require__(39));
+	__webpack_require__(40);
 
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -8687,13 +8704,13 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var arrays = __webpack_require__(8);
-	var phosphor_boxengine_1 = __webpack_require__(11);
-	var phosphor_domutil_1 = __webpack_require__(12);
-	var phosphor_messaging_1 = __webpack_require__(18);
-	var phosphor_panel_1 = __webpack_require__(22);
-	var phosphor_properties_1 = __webpack_require__(6);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var arrays = __webpack_require__(9);
+	var phosphor_boxengine_1 = __webpack_require__(12);
+	var phosphor_domutil_1 = __webpack_require__(13);
+	var phosphor_messaging_1 = __webpack_require__(19);
+	var phosphor_panel_1 = __webpack_require__(23);
+	var phosphor_properties_1 = __webpack_require__(7);
+	var phosphor_widget_1 = __webpack_require__(25);
 	/**
 	 * The class name added to hidden split handles.
 	 */
@@ -9448,7 +9465,7 @@
 
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -9464,9 +9481,9 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var phosphor_domutil_1 = __webpack_require__(12);
-	var phosphor_panel_1 = __webpack_require__(22);
-	var layout_1 = __webpack_require__(37);
+	var phosphor_domutil_1 = __webpack_require__(13);
+	var phosphor_panel_1 = __webpack_require__(23);
+	var layout_1 = __webpack_require__(38);
 	/**
 	 * The class name added to SplitPanel instances.
 	 */
@@ -9805,16 +9822,16 @@
 
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(40);
+	var content = __webpack_require__(41);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(17)(content, {});
+	var update = __webpack_require__(18)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -9831,10 +9848,10 @@
 	}
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(16)();
+	exports = module.exports = __webpack_require__(17)();
 	// imports
 
 
@@ -9845,7 +9862,7 @@
 
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -9859,12 +9876,12 @@
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
-	__export(__webpack_require__(42));
 	__export(__webpack_require__(43));
+	__export(__webpack_require__(44));
 
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -9880,11 +9897,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var phosphor_domutil_1 = __webpack_require__(12);
-	var phosphor_messaging_1 = __webpack_require__(18);
-	var phosphor_panel_1 = __webpack_require__(22);
-	var phosphor_properties_1 = __webpack_require__(6);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var phosphor_domutil_1 = __webpack_require__(13);
+	var phosphor_messaging_1 = __webpack_require__(19);
+	var phosphor_panel_1 = __webpack_require__(23);
+	var phosphor_properties_1 = __webpack_require__(7);
+	var phosphor_widget_1 = __webpack_require__(25);
 	/**
 	 * A layout where visible children are stacked atop one another.
 	 *
@@ -10161,7 +10178,7 @@
 
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -10177,9 +10194,9 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var phosphor_panel_1 = __webpack_require__(22);
-	var phosphor_signaling_1 = __webpack_require__(26);
-	var layout_1 = __webpack_require__(42);
+	var phosphor_panel_1 = __webpack_require__(23);
+	var phosphor_signaling_1 = __webpack_require__(27);
+	var layout_1 = __webpack_require__(43);
 	/**
 	 * The class name added to StackedPanel instances.
 	 */
@@ -10248,7 +10265,7 @@
 
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -10262,13 +10279,13 @@
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
-	__export(__webpack_require__(45));
 	__export(__webpack_require__(46));
-	__webpack_require__(47);
+	__export(__webpack_require__(47));
+	__webpack_require__(48);
 
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -10284,10 +10301,10 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var arrays = __webpack_require__(8);
-	var phosphor_domutil_1 = __webpack_require__(12);
-	var phosphor_signaling_1 = __webpack_require__(26);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var arrays = __webpack_require__(9);
+	var phosphor_domutil_1 = __webpack_require__(13);
+	var phosphor_signaling_1 = __webpack_require__(27);
+	var phosphor_widget_1 = __webpack_require__(25);
 	/**
 	 * The class name added to TabBar instances.
 	 */
@@ -11215,7 +11232,7 @@
 
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -11231,10 +11248,10 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var phosphor_boxpanel_1 = __webpack_require__(9);
-	var phosphor_stackedpanel_1 = __webpack_require__(41);
-	var phosphor_widget_1 = __webpack_require__(24);
-	var tabbar_1 = __webpack_require__(45);
+	var phosphor_boxpanel_1 = __webpack_require__(10);
+	var phosphor_stackedpanel_1 = __webpack_require__(42);
+	var phosphor_widget_1 = __webpack_require__(25);
+	var tabbar_1 = __webpack_require__(46);
 	/**
 	 * The class name added to TabPanel instances.
 	 */
@@ -11484,16 +11501,16 @@
 
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(48);
+	var content = __webpack_require__(49);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(17)(content, {});
+	var update = __webpack_require__(18)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -11510,10 +11527,10 @@
 	}
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(16)();
+	exports = module.exports = __webpack_require__(17)();
 	// imports
 
 
@@ -11524,16 +11541,16 @@
 
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(50);
+	var content = __webpack_require__(51);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(17)(content, {});
+	var update = __webpack_require__(18)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -11550,10 +11567,10 @@
 	}
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(16)();
+	exports = module.exports = __webpack_require__(17)();
 	// imports
 
 
@@ -11564,11 +11581,11 @@
 
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
 	|
 	| Distributed under the terms of the BSD 3-Clause License.
 	|
@@ -11580,11 +11597,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var arrays = __webpack_require__(8);
-	var phosphor_domutil_1 = __webpack_require__(12);
-	var phosphor_properties_1 = __webpack_require__(6);
-	var phosphor_signaling_1 = __webpack_require__(26);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var arrays = __webpack_require__(9);
+	var phosphor_domutil_1 = __webpack_require__(13);
+	var phosphor_properties_1 = __webpack_require__(7);
+	var phosphor_signaling_1 = __webpack_require__(27);
+	var phosphor_widget_1 = __webpack_require__(25);
 	// TODO - need better solution for storing these class names
 	/**
 	 * The class name added to SideBar instances.
@@ -11965,16 +11982,16 @@
 
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(53);
+	var content = __webpack_require__(54);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(17)(content, {});
+	var update = __webpack_require__(18)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -11991,33 +12008,32 @@
 	}
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(16)();
+	exports = module.exports = __webpack_require__(17)();
 	// imports
 
 
 	// module
-	exports.push([module.id, "/*-----------------------------------------------------------------------------\r\n| Copyright (c) 2014-2015, PhosphorJS Contributors\r\n|\r\n| Distributed under the terms of the BSD 3-Clause License.\r\n|\r\n| The full license is in the file LICENSE, distributed with this software.\r\n|----------------------------------------------------------------------------*/\r\n.p-AppShell {\r\n  position: relative;\r\n}\r\n\r\n\r\n.p-AppShell > .p-Widget {\r\n  position: absolute;\r\n}\r\n\r\n\r\n.p-SideBar-content {\r\n  margin: 0;\r\n  padding: 0;\r\n  display: flex;\r\n  align-items: stretch;\r\n  list-style-type: none;\r\n}\r\n\r\n\r\n.p-SideBar-button {\r\n  box-sizing: border-box;\r\n}\r\n", ""]);
+	exports.push([module.id, "/*-----------------------------------------------------------------------------\r\n| Copyright (c) 2014-2016, PhosphorJS Contributors\r\n|\r\n| Distributed under the terms of the BSD 3-Clause License.\r\n|\r\n| The full license is in the file LICENSE, distributed with this software.\r\n|----------------------------------------------------------------------------*/\r\n.p-AppShell {\r\n  position: relative;\r\n}\r\n\r\n\r\n.p-AppShell > .p-Widget {\r\n  position: absolute;\r\n}\r\n\r\n\r\n.p-SideBar-content {\r\n  margin: 0;\r\n  padding: 0;\r\n  display: flex;\r\n  align-items: stretch;\r\n  list-style-type: none;\r\n}\r\n\r\n\r\n.p-SideBar-button {\r\n  box-sizing: border-box;\r\n}\r\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
 	|
 	| Distributed under the terms of the BSD 3-Clause License.
 	|
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
-	var phosphor_disposable_1 = __webpack_require__(13);
-	var phosphor_signaling_1 = __webpack_require__(26);
+	var phosphor_signaling_1 = __webpack_require__(27);
 	var index_1 = __webpack_require__(4);
 	/**
 	 * Register the plugin contributions.
@@ -12036,10 +12052,10 @@
 	 */
 	var CommandRegistry = (function () {
 	    /**
-	     * Construct a new command registry instance.
+	     * Construct a new command registry.
 	     */
 	    function CommandRegistry() {
-	        this._map = Object.create(null);
+	        this._stateMap = Object.create(null);
 	    }
 	    /**
 	     * Create a new command registry instance.
@@ -12047,92 +12063,93 @@
 	    CommandRegistry.create = function () {
 	        return new CommandRegistry();
 	    };
-	    Object.defineProperty(CommandRegistry.prototype, "commandsAdded", {
+	    Object.defineProperty(CommandRegistry.prototype, "commandAdded", {
 	        /**
-	         * A signal emitted when commands are added to the registry.
+	         * A signal emitted when a command is added to the registry.
 	         */
 	        get: function () {
-	            return CommandRegistryPrivate.commandsAddedSignal.bind(this);
+	            return CommandRegistryPrivate.commandAddedSignal.bind(this);
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
-	    Object.defineProperty(CommandRegistry.prototype, "commandsRemoved", {
+	    Object.defineProperty(CommandRegistry.prototype, "commandRemoved", {
 	        /**
-	         * A signal emitted when commands are removed from the registry.
+	         * A signal emitted when a command is removed from the registry.
 	         */
 	        get: function () {
-	            return CommandRegistryPrivate.commandsRemovedSignal.bind(this);
+	            return CommandRegistryPrivate.commandRemovedSignal.bind(this);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(CommandRegistry.prototype, "commandChanged", {
+	        /**
+	         * A signal emitted when the state of a command is changed.
+	         */
+	        get: function () {
+	            return CommandRegistryPrivate.commandChangedSignal.bind(this);
 	        },
 	        enumerable: true,
 	        configurable: true
 	    });
 	    /**
-	     * List the ids of the currently registered commands.
+	     * List the currently registered commands.
 	     *
 	     * @returns A new array of the registered command ids.
 	     */
 	    CommandRegistry.prototype.list = function () {
-	        return Object.keys(this._map);
+	        return Object.keys(this._stateMap);
 	    };
 	    /**
-	     * Test whether a command with a specific id is registered.
+	     * Test whether a command is registered.
 	     *
 	     * @param id - The id of the command of interest.
 	     *
 	     * @returns `true` if the command is registered, `false` otherwise.
 	     */
 	    CommandRegistry.prototype.has = function (id) {
-	        return id in this._map;
+	        return id in this._stateMap;
 	    };
 	    /**
-	     * Lookup a command with a specific id.
+	     * Test whether a command is checked.
 	     *
 	     * @param id - The id of the command of interest.
 	     *
-	     * @returns The command with the specified id, or `undefined`.
+	     * @returns `true` if the command is checked, `false` otherwise.
 	     */
-	    CommandRegistry.prototype.get = function (id) {
-	        return this._map[id];
+	    CommandRegistry.prototype.isChecked = function (id) {
+	        var state = this._stateMap[id];
+	        return state ? state.checked : false;
 	    };
 	    /**
-	     * Add commands to the registry.
+	     * Test whether a command is disabled.
 	     *
-	     * @param items - The command items to add to the registry.
+	     * @param id - The id of the command of interest.
 	     *
-	     * @returns A disposable which will remove the added commands.
+	     * @returns `true` if the command is disabled, `false` otherwise.
+	     */
+	    CommandRegistry.prototype.isDisabled = function (id) {
+	        var state = this._stateMap[id];
+	        return state ? state.disabled : false;
+	    };
+	    /**
+	     * Test whether a command can execute in its current state.
+	     *
+	     * @param id - The id of the command of interest.
+	     *
+	     * @returns `true` if the command can execute, `false` otherwise.
 	     *
 	     * #### Notes
-	     * If the `id` for a command is already registered, a warning will be
-	     * logged to the console and that specific command will be ignored.
+	     * A command is typically considered executable if it is registered
+	     * and is not disabled.
 	     */
-	    CommandRegistry.prototype.add = function (items) {
-	        var _this = this;
-	        var added = [];
-	        for (var _i = 0; _i < items.length; _i++) {
-	            var _a = items[_i], id = _a.id, command = _a.command;
-	            if (id in this._map) {
-	                console.warn("Command '" + id + "' is already registered.");
-	            }
-	            else {
-	                added.push(id);
-	                this._map[id] = command;
-	            }
-	        }
-	        if (added.length === 0) {
-	            return new phosphor_disposable_1.DisposableDelegate(null);
-	        }
-	        this.commandsAdded.emit(added.slice());
-	        return new phosphor_disposable_1.DisposableDelegate(function () {
-	            for (var _i = 0; _i < added.length; _i++) {
-	                var id = added[_i];
-	                delete _this._map[id];
-	            }
-	            _this.commandsRemoved.emit(added.slice());
-	        });
+	    CommandRegistry.prototype.canExecute = function (id) {
+	        var state = this._stateMap[id];
+	        return state ? !state.disabled : false;
 	    };
 	    /**
-	     * A convenience method to execute a registered command.
+	     * Execute a registered command.
 	     *
 	     * @param id - The id of the command to execute.
 	     *
@@ -12140,48 +12157,102 @@
 	     *   may be `null` if the command does not require arguments.
 	     *
 	     * #### Notes
-	     * If the command is not registered or is not enabled, a warning will
-	     * be logged to the console. If the command throws an exception, the
-	     * exception will be propagated to the caller.
-	     *
-	     * If more control over execution is required, the command should be
-	     * retrieved from the registry and used directly.
+	     * If the command is not registered or is disabled, a warning will be
+	     * logged to the console. If the command throws an exception, it will
+	     * be caught and logged to the console.
 	     */
 	    CommandRegistry.prototype.execute = function (id, args) {
-	        var cmd = this._map[id];
-	        if (!cmd) {
+	        var state = this._stateMap[id];
+	        if (!state) {
 	            console.warn("Command '" + id + "' is not registered.");
 	            return;
 	        }
-	        if (!cmd.isEnabled()) {
-	            console.warn("Command '" + id + "' is not enabled.");
+	        if (state.disabled) {
+	            console.warn("Command '" + id + "' is disabled.");
 	            return;
 	        }
-	        cmd.execute(args);
-	    };
-	    /**
-	     * A convenience method to safely execute a registered command.
-	     *
-	     * @param id - The id of the command to execute.
-	     *
-	     * @param args - The arguments object to pass to the command. This
-	     *   may be `null` if the command does not require arguments.
-	     *
-	     * #### Notes
-	     * If the command is not registered or is not enabled, a warning will
-	     * be logged to the console. If the command throws an exception, the
-	     * exception will be logged to the console.
-	     *
-	     * If more control over execution is required, the command should be
-	     * retrieved from the registry and used directly.
-	     */
-	    CommandRegistry.prototype.safeExecute = function (id, args) {
 	        try {
-	            this.execute(id, args);
+	            state.handler.call(void 0, args);
 	        }
 	        catch (err) {
-	            console.error(err);
+	            console.error("Error in command '" + id + "':", err);
 	        }
+	    };
+	    /**
+	     * Add a command to the registry.
+	     *
+	     * @param id - The unique id for the command.
+	     *
+	     * @param handler - The handler function for the command.
+	     *
+	     * @returns A command record which can be used to modify the state
+	     *   of the command. Disposing the record will remove the command
+	     *   from the registry.
+	     *
+	     * #### Notes
+	     * If the given command `id` is already registered, an exception
+	     * will be thrown.
+	     */
+	    CommandRegistry.prototype.add = function (id, handler) {
+	        if (id in this._stateMap) {
+	            throw new Error("Command '" + id + "' is already registered.");
+	        }
+	        var state = { handler: handler, checked: false, disabled: false };
+	        var record = new CommandRecord(this, id);
+	        this._stateMap[id] = state;
+	        this.commandAdded.emit(id);
+	        return record;
+	    };
+	    /**
+	     * Get the handler function for the given command id.
+	     *
+	     * #### Notes
+	     * This is an `internal` method.
+	     */
+	    CommandRegistry.prototype._getHandler = function (id) {
+	        var state = this._stateMap[id];
+	        return state ? state.handler : null;
+	    };
+	    /**
+	     * Set the checked state for the given command id.
+	     *
+	     * #### Notes
+	     * This is an `internal` method.
+	     */
+	    CommandRegistry.prototype._setChecked = function (id, value) {
+	        var state = this._stateMap[id];
+	        if (!state || state.checked === value) {
+	            return;
+	        }
+	        state.checked = value;
+	        this.commandChanged.emit(id);
+	    };
+	    /**
+	     * Set the disabled state for the given command id.
+	     *
+	     * #### Notes
+	     * This is an `internal` method.
+	     */
+	    CommandRegistry.prototype._setDisabled = function (id, value) {
+	        var state = this._stateMap[id];
+	        if (!state || state.disabled === value) {
+	            return;
+	        }
+	        state.disabled = value;
+	        this.commandChanged.emit(id);
+	    };
+	    /**
+	     * Remove the command with the given id.
+	     *
+	     * #### Notes
+	     * This is an `internal` method.
+	     */
+	    CommandRegistry.prototype._remove = function (id) {
+	        if (!(id in this._stateMap)) {
+	            return;
+	        }
+	        delete this._stateMap[id];
+	        this.commandRemoved.emit(id);
 	    };
 	    /**
 	     * The dependencies required by the command registry.
@@ -12190,23 +12261,1774 @@
 	    return CommandRegistry;
 	})();
 	/**
+	 * A concrete implementation of ICommandRecord.
+	 */
+	var CommandRecord = (function () {
+	    /**
+	     * Construct a new command record.
+	     *
+	     * @param registry - The registry which owns the command.
+	     *
+	     * @param id - The unique id of the command.
+	     */
+	    function CommandRecord(registry, id) {
+	        this._registry = registry;
+	        this._id = id;
+	    }
+	    /**
+	     * Dispose the record and remove the command from the registry.
+	     */
+	    CommandRecord.prototype.dispose = function () {
+	        if (this.isDisposed) {
+	            return;
+	        }
+	        var id = this._id;
+	        var registry = this._registry;
+	        this._id = '';
+	        this._registry = null;
+	        registry._remove(id);
+	    };
+	    Object.defineProperty(CommandRecord.prototype, "isDisposed", {
+	        /**
+	         * Test whether the command record is disposed.
+	         */
+	        get: function () {
+	            return this._registry === null;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(CommandRecord.prototype, "registry", {
+	        /**
+	         * Get the command registry which owns the command.
+	         */
+	        get: function () {
+	            if (this.isDisposed)
+	                throw new Error('object is disposed');
+	            return this._registry;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(CommandRecord.prototype, "id", {
+	        /**
+	         * Get the id of the registered command.
+	         */
+	        get: function () {
+	            if (this.isDisposed)
+	                throw new Error('object is disposed');
+	            return this._id;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(CommandRecord.prototype, "handler", {
+	        /**
+	         * Get the handler function for the command.
+	         */
+	        get: function () {
+	            if (this.isDisposed)
+	                throw new Error('object is disposed');
+	            return this._registry._getHandler(this._id);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(CommandRecord.prototype, "checked", {
+	        /**
+	         * Get the checked state of the command.
+	         */
+	        get: function () {
+	            if (this.isDisposed)
+	                throw new Error('object is disposed');
+	            return this._registry.isChecked(this._id);
+	        },
+	        /**
+	         * Set the checked state of the command.
+	         */
+	        set: function (value) {
+	            if (this.isDisposed)
+	                throw new Error('object is disposed');
+	            this._registry._setChecked(this._id, value);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(CommandRecord.prototype, "disabled", {
+	        /**
+	         * Get the disabled state of the command.
+	         */
+	        get: function () {
+	            if (this.isDisposed)
+	                throw new Error('object is disposed');
+	            return this._registry.isDisabled(this._id);
+	        },
+	        /**
+	         * Set the disabled state of the command.
+	         */
+	        set: function (value) {
+	            if (this.isDisposed)
+	                throw new Error('object is disposed');
+	            this._registry._setDisabled(this._id, value);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    return CommandRecord;
+	})();
+	/**
 	 * The namespace for the `CommandRegistry` class private data.
 	 */
 	var CommandRegistryPrivate;
 	(function (CommandRegistryPrivate) {
 	    /**
-	     * A signal emitted when commands are added to the registry.
+	     * A signal emitted when a command is added to the registry.
 	     */
-	    CommandRegistryPrivate.commandsAddedSignal = new phosphor_signaling_1.Signal();
+	    CommandRegistryPrivate.commandAddedSignal = new phosphor_signaling_1.Signal();
 	    /**
-	     * A signal emitted when commands are removed from the registry.
+	     * A signal emitted when a command is removed from the registry.
 	     */
-	    CommandRegistryPrivate.commandsRemovedSignal = new phosphor_signaling_1.Signal();
+	    CommandRegistryPrivate.commandRemovedSignal = new phosphor_signaling_1.Signal();
+	    /**
+	     * A signal emitted when the state of a command is changed.
+	     */
+	    CommandRegistryPrivate.commandChangedSignal = new phosphor_signaling_1.Signal();
 	})(CommandRegistryPrivate || (CommandRegistryPrivate = {}));
 
 
 /***/ },
-/* 55 */
+/* 56 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
+	var phosphor_di_1 = __webpack_require__(3);
+	var palette_1 = __webpack_require__(57);
+	var index_1 = __webpack_require__(5);
+	var index_2 = __webpack_require__(4);
+	/**
+	 * Register the plugin contributions.
+	 *
+	 * @param container - The di container for type registration.
+	 *
+	 * #### Notes
+	 * This is called automatically when the plugin is loaded.
+	 */
+	function register(container) {
+	    container.register(index_1.ICommandPalette, {
+	        lifetime: phosphor_di_1.Lifetime.Singleton,
+	        requires: [index_2.ICommandRegistry],
+	        create: function (commandRegistry) {
+	            return new palette_1.CommandPalette(commandRegistry);
+	        }
+	    });
+	}
+	exports.register = register;
+
+
+/***/ },
+/* 57 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var arrays = __webpack_require__(9);
+	var phosphor_disposable_1 = __webpack_require__(14);
+	var phosphor_widget_1 = __webpack_require__(25);
+	var matcher_1 = __webpack_require__(58);
+	__webpack_require__(77);
+	var REGISTRATION_ID = 'data-registration-id';
+	var CONTENT_CLASS = 'p-CommandPalette-content';
+	var PALETTE_CLASS = 'p-CommandPalette';
+	var HEADER_CLASS = 'p-CommandPalette-header';
+	var INPUT_CLASS = 'p-CommandPalette-inputWrapper';
+	var DISABLED_CLASS = 'p-mod-disabled';
+	var FOCUS_CLASS = 'p-mod-focus';
+	var COMMAND_CLASS = 'p-CommandPalette-command';
+	var DESCRIPTION_CLASS = 'p-CommandPalette-description';
+	var SHORTCUT_CLASS = 'p-CommandPalette-shortcut';
+	var SEARCH_CLASS = 'p-CommandPalette-search';
+	var ENTER = 13;
+	var ESCAPE = 27;
+	var UP_ARROW = 38;
+	var DOWN_ARROW = 40;
+	var FN_KEYS = (_a = {},
+	    _a[ENTER] = null,
+	    _a[ESCAPE] = null,
+	    _a[UP_ARROW] = null,
+	    _a[DOWN_ARROW] = null,
+	    _a
+	);
+	var matcher = new matcher_1.FuzzyMatcher('title', 'caption');
+	var commandID = 0;
+	;
+	/**
+	 * Test to see if a child node needs to be scrolled to within its parent node.
+	 */
+	function scrollTest(parentNode, childNode) {
+	    var parent = parentNode.getBoundingClientRect();
+	    var child = childNode.getBoundingClientRect();
+	    return child.top < parent.top || child.top + child.height > parent.bottom;
+	}
+	/**
+	 * A widget which displays registered commands and allows them to be executed.
+	 */
+	var CommandPalette = (function (_super) {
+	    __extends(CommandPalette, _super);
+	    /**
+	     * Construct a new command palette.
+	     *
+	     * @param commandRegistry - A command registry instance
+	     */
+	    function CommandPalette(commandRegistry) {
+	        _super.call(this);
+	        this._buffer = [];
+	        this._commandRegistry = null;
+	        this._sections = [];
+	        this._searchResult = false;
+	        this._registry = Object.create(null);
+	        this.addClass(PALETTE_CLASS);
+	        this._commandRegistry = commandRegistry;
+	        commandRegistry.commandAdded.connect(this._commandUpdated, this);
+	        commandRegistry.commandRemoved.connect(this._commandUpdated, this);
+	        commandRegistry.commandChanged.connect(this._commandUpdated, this);
+	    }
+	    /**
+	     * Create the DOM node for a command palette.
+	     */
+	    CommandPalette.createNode = function () {
+	        var node = document.createElement('div');
+	        var content = document.createElement('ul');
+	        var search = document.createElement('div');
+	        var input = document.createElement('input');
+	        var wrapper = document.createElement('div');
+	        content.className = CONTENT_CLASS;
+	        search.className = SEARCH_CLASS;
+	        wrapper.className = INPUT_CLASS;
+	        wrapper.appendChild(input);
+	        search.appendChild(wrapper);
+	        node.appendChild(search);
+	        node.appendChild(content);
+	        return node;
+	    };
+	    /**
+	     * Create a new header node for a command palette section.
+	     *
+	     * @param title - The palette section title
+	     *
+	     * @returns A new DOM node to use as a header in a command palette section.
+	     *
+	     * #### Notes
+	     * This method may be reimplemented to create custom header.
+	     */
+	    CommandPalette.createHeaderNode = function (title) {
+	        var node = document.createElement('li');
+	        node.className = HEADER_CLASS;
+	        node.appendChild(document.createTextNode(title));
+	        node.appendChild(document.createElement('hr'));
+	        return node;
+	    };
+	    /**
+	     * Create a new item node for a command palette.
+	     *
+	     * @param item - The content for the palette item.
+	     *
+	     * @returns A new DOM node to use as an item in a command palette.
+	     *
+	     * #### Notes
+	     * This method may be reimplemented to create custom items.
+	     */
+	    CommandPalette.createItemNode = function (item) {
+	        var node = document.createElement('li');
+	        var description = document.createElement('div');
+	        var shortcut = document.createElement('div');
+	        node.className = COMMAND_CLASS;
+	        description.className = DESCRIPTION_CLASS;
+	        shortcut.className = SHORTCUT_CLASS;
+	        node.textContent = item.title;
+	        if (item.caption)
+	            description.textContent = item.caption;
+	        if (item.shortcut)
+	            shortcut.textContent = item.shortcut;
+	        node.appendChild(shortcut);
+	        node.appendChild(description);
+	        return node;
+	    };
+	    /**
+	     * Create a new section document fragment for a command palette.
+	     *
+	     * @param section - The section content.
+	     *
+	     * @returns A `DocumentFragment` with the whole rendered section.
+	     *
+	     * #### Notes
+	     * This method may be reimplemented to create custom sections.
+	     */
+	    CommandPalette.createSectionFragment = function (section) {
+	        var _this = this;
+	        var fragment = document.createDocumentFragment();
+	        fragment.appendChild(this.createHeaderNode(section.text));
+	        section.items.forEach(function (item) {
+	            fragment.appendChild(_this.createItemNode(item));
+	        });
+	        return fragment;
+	    };
+	    Object.defineProperty(CommandPalette.prototype, "contentNode", {
+	        /**
+	         * Get the command palette content node.
+	         *
+	         * #### Notes
+	         * This is the node which holds the command palette item nodes.
+	         *
+	         * Modifying this node directly can lead to undefined behavior.
+	         *
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this.node.getElementsByClassName(CONTENT_CLASS)[0];
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(CommandPalette.prototype, "inputNode", {
+	        /**
+	         * Get the command palette input node.
+	         *
+	         * #### Notes
+	         * Modifying this node directly can lead to undefined behavior.
+	         *
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this.node.getElementsByTagName('input')[0];
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     * Dispose of the resources held by the command palette.
+	     */
+	    CommandPalette.prototype.dispose = function () {
+	        var commandRegistry = this._commandRegistry;
+	        commandRegistry.commandAdded.disconnect(this._commandUpdated, this);
+	        commandRegistry.commandRemoved.disconnect(this._commandUpdated, this);
+	        commandRegistry.commandChanged.disconnect(this._commandUpdated, this);
+	        this._sections.length = 0;
+	        this._buffer.length = 0;
+	        this._registry = null;
+	        _super.prototype.dispose.call(this);
+	    };
+	    /**
+	     * Add new sections with heading titles and command items to the palette.
+	     *
+	     * @param sections - An array of sections to be added to the palette
+	     *
+	     * @returns An `IDisposable` to remove the added items from the palette
+	     */
+	    CommandPalette.prototype.add = function (sections) {
+	        var _this = this;
+	        var text;
+	        var sectionIndex;
+	        var itemIndex;
+	        var registrationID;
+	        var registrations = [];
+	        var item;
+	        for (var _i = 0; _i < sections.length; _i++) {
+	            var section = sections[_i];
+	            text = section.text;
+	            sectionIndex = arrays.findIndex(this._sections, function (s) {
+	                return s.text === text;
+	            });
+	            if (sectionIndex === -1) {
+	                var ids = this._addSection(section);
+	                Array.prototype.push.apply(registrations, ids);
+	            }
+	            else {
+	                var ids = this._amendSection(section.items, sectionIndex);
+	                Array.prototype.push.apply(registrations, ids);
+	            }
+	        }
+	        this._bufferAllItems();
+	        return new phosphor_disposable_1.DisposableDelegate(function () {
+	            registrations.forEach(function (id) { _this._removeItem(id); });
+	            _this._bufferAllItems();
+	        });
+	    };
+	    /**
+	     * Handle the DOM events for the command palette.
+	     *
+	     * @param event - The DOM event sent to the command palette.
+	     *
+	     * #### Notes
+	     * This method implements the DOM `EventListener` interface and is
+	     * called in response to events on the command palette's DOM node. It should
+	     * not be called directly by user code.
+	     */
+	    CommandPalette.prototype.handleEvent = function (event) {
+	        switch (event.type) {
+	            case 'click':
+	                this._evtClick(event);
+	                break;
+	            case 'keydown':
+	                this._evtKeyDown(event);
+	                break;
+	            case 'mouseover':
+	                this._evtMouseOver(event);
+	                break;
+	            case 'mouseout':
+	                this._evtMouseOut(event);
+	                break;
+	        }
+	    };
+	    /**
+	     * Search for a specific query string among command titles and captions.
+	     *
+	     * @param query - The query string
+	     */
+	    CommandPalette.prototype.search = function (query) {
+	        var _this = this;
+	        var searchableItems = this._sections.reduce(function (acc, val) {
+	            val.items.forEach(function (id) {
+	                var title = _this._registry[id].item.title;
+	                var caption = _this._registry[id].item.caption;
+	                acc.push({ id: id, title: title, caption: caption });
+	            });
+	            return acc;
+	        }, []);
+	        matcher.search(query, searchableItems).then(function (results) {
+	            _this._bufferSearchResults(results);
+	        });
+	    };
+	    /**
+	     * A message handler invoked on a `'after-attach'` message.
+	     */
+	    CommandPalette.prototype.onAfterAttach = function (msg) {
+	        this.node.addEventListener('click', this);
+	        this.node.addEventListener('keydown', this);
+	        this.node.addEventListener('mouseover', this);
+	        this.node.addEventListener('mouseout', this);
+	    };
+	    /**
+	     * A message handler invoked on a `'before-detach'` message.
+	     */
+	    CommandPalette.prototype.onBeforeDetach = function (msg) {
+	        this.node.removeEventListener('click', this);
+	        this.node.removeEventListener('keydown', this);
+	        this.node.removeEventListener('mouseover', this);
+	        this.node.removeEventListener('mouseout', this);
+	    };
+	    /**
+	     * A handler invoked on an `'after-show'` message.
+	     */
+	    CommandPalette.prototype.onAfterShow = function (msg) {
+	        this.inputNode.focus();
+	    };
+	    /**
+	     * A handler invoked on an `'update-request'` message.
+	     */
+	    CommandPalette.prototype.onUpdateRequest = function (msg) {
+	        var _this = this;
+	        // Clear the node.
+	        this.contentNode.textContent = '';
+	        // Ask the command registry about each palette commmand.
+	        Object.keys(this._registry).forEach(function (registrationID) {
+	            var priv = _this._registry[registrationID];
+	            var exists = _this._commandRegistry.has(priv.item.id);
+	            priv.disabled = !exists || _this._commandRegistry.isDisabled(priv.item.id);
+	        });
+	        // Render the buffer.
+	        this._buffer.forEach(function (section) { return _this._renderSection(section); });
+	        // Focus on the first result if search result.
+	        if (this._searchResult) {
+	            // Reset the flag.
+	            this._searchResult = false;
+	            this._focusFirst();
+	        }
+	    };
+	    /**
+	     * Add a new section to the palette's registry and return registration IDs.
+	     */
+	    CommandPalette.prototype._addSection = function (section) {
+	        var registrations = [];
+	        var registrationID;
+	        var privSection = {
+	            text: section.text,
+	            items: []
+	        };
+	        for (var _i = 0, _a = section.items; _i < _a.length; _i++) {
+	            var item = _a[_i];
+	            registrationID = "palette-" + ++commandID;
+	            this._registry[registrationID] = this._privatize(item);
+	            registrations.push(registrationID);
+	            privSection.items.push(registrationID);
+	        }
+	        this._sections.push(privSection);
+	        return registrations;
+	    };
+	    /**
+	     * Amend a section in the palette's registry and return registration IDs.
+	     */
+	    CommandPalette.prototype._amendSection = function (items, sectionIndex) {
+	        var _this = this;
+	        var registrations = [];
+	        var registrationID;
+	        var item;
+	        var itemIndex;
+	        for (var _i = 0; _i < items.length; _i++) {
+	            item = items[_i];
+	            var existingItems = this._sections[sectionIndex].items;
+	            itemIndex = arrays.findIndex(existingItems, function (registrationID) {
+	                return _this._registry[registrationID].item === item;
+	            });
+	            if (itemIndex !== -1)
+	                continue;
+	            registrationID = "palette-" + ++commandID;
+	            this._registry[registrationID] = this._privatize(item);
+	            existingItems.push(registrationID);
+	            registrations.push(registrationID);
+	        }
+	        return registrations;
+	    };
+	    /**
+	     * Deselect all palette items.
+	     */
+	    CommandPalette.prototype._blur = function () {
+	        var selector = "." + COMMAND_CLASS + "." + FOCUS_CLASS;
+	        var nodes = this.node.querySelectorAll(selector);
+	        for (var i = 0; i < nodes.length; ++i) {
+	            nodes[i].classList.remove(FOCUS_CLASS);
+	        }
+	    };
+	    /**
+	     * Set the buffer to all registered items.
+	     */
+	    CommandPalette.prototype._bufferAllItems = function () {
+	        // Filter out any sections that are empty.
+	        this._sections = this._sections.filter(function (section) { return !!section.items.length; });
+	        this._sort();
+	        this._buffer = this._sections;
+	        this.update();
+	    };
+	    /**
+	     * Set the buffer to search results.
+	     */
+	    CommandPalette.prototype._bufferSearchResults = function (items) {
+	        var headings = this._sections.reduce(function (acc, section) {
+	            section.items.forEach(function (id) { return acc[id] = section.text; });
+	            return acc;
+	        }, Object.create(null));
+	        var sections = items.reduce(function (acc, val, idx) {
+	            var heading = headings[val.id];
+	            if (!idx) {
+	                acc.push({ text: heading, items: [val.id] });
+	                return acc;
+	            }
+	            if (acc[acc.length - 1].text === heading) {
+	                // Add to the last group.
+	                acc[acc.length - 1].items.push(val.id);
+	            }
+	            else {
+	                // Create a new group.
+	                acc.push({ text: heading, items: [val.id] });
+	            }
+	            return acc;
+	        }, []);
+	        // If there are search results, set the search flag used for focusing
+	        if (sections.length)
+	            this._searchResult = true;
+	        this._buffer = sections;
+	        this.update();
+	    };
+	    /**
+	     * A handler for command registry additions and removals.
+	     */
+	    CommandPalette.prototype._commandUpdated = function (sender, id) {
+	        var _this = this;
+	        var staleRegistry = Object.keys(this._registry).some(function (registrationID) {
+	            return _this._registry[registrationID].item.id === id;
+	        });
+	        if (staleRegistry)
+	            this.update();
+	    };
+	    /**
+	     * Handle the `'click'` event for the command palette.
+	     */
+	    CommandPalette.prototype._evtClick = function (event) {
+	        var altKey = event.altKey, ctrlKey = event.ctrlKey, metaKey = event.metaKey, shiftKey = event.shiftKey;
+	        if (event.button !== 0 || altKey || ctrlKey || metaKey || shiftKey)
+	            return;
+	        event.stopPropagation();
+	        event.preventDefault();
+	        var target = event.target;
+	        while (!target.hasAttribute(REGISTRATION_ID)) {
+	            if (target === this.node)
+	                return;
+	            target = target.parentElement;
+	        }
+	        var priv = this._registry[target.getAttribute(REGISTRATION_ID)];
+	        if (!priv.disabled) {
+	            this._commandRegistry.execute(priv.item.id, priv.item.args);
+	        }
+	    };
+	    /**
+	     * Handle the `'keydown'` event for the command palette.
+	     */
+	    CommandPalette.prototype._evtKeyDown = function (event) {
+	        var _this = this;
+	        var altKey = event.altKey, ctrlKey = event.ctrlKey, metaKey = event.metaKey, keyCode = event.keyCode;
+	        if (!FN_KEYS.hasOwnProperty("" + keyCode)) {
+	            var input = this.inputNode;
+	            var oldValue = input.value;
+	            requestAnimationFrame(function () {
+	                var newValue = input.value;
+	                if (newValue === '')
+	                    return _this._bufferAllItems();
+	                if (newValue !== oldValue)
+	                    return _this.search(newValue);
+	            });
+	            return;
+	        }
+	        // Ignore system keyboard shortcuts.
+	        if (altKey || ctrlKey || metaKey)
+	            return;
+	        // If escape key is pressed and nothing is focused, allow propagation.
+	        if (keyCode === ESCAPE) {
+	            if (!this._findFocus())
+	                return;
+	            event.preventDefault();
+	            event.stopPropagation();
+	            return this._blur();
+	        }
+	        event.preventDefault();
+	        event.stopPropagation();
+	        if (keyCode === UP_ARROW)
+	            return this._focus(0 /* Up */);
+	        if (keyCode === DOWN_ARROW)
+	            return this._focus(1 /* Down */);
+	        if (keyCode === ENTER) {
+	            var focused = this._findFocus();
+	            if (!focused)
+	                return;
+	            var priv = this._registry[focused.getAttribute(REGISTRATION_ID)];
+	            this._commandRegistry.execute(priv.item.id, priv.item.args);
+	            this._blur();
+	            return;
+	        }
+	    };
+	    /**
+	     * Handle the `'mouseover'` event for the command palette.
+	     */
+	    CommandPalette.prototype._evtMouseOver = function (event) {
+	        var target = event.target;
+	        while (!target.hasAttribute(REGISTRATION_ID)) {
+	            if (target === this.node)
+	                return;
+	            target = target.parentElement;
+	        }
+	        var priv = this._registry[target.getAttribute(REGISTRATION_ID)];
+	        if (!priv.disabled)
+	            this._focusNode(target);
+	    };
+	    /**
+	     * Handle the `'mouseout'` event for the command palette.
+	     */
+	    CommandPalette.prototype._evtMouseOut = function (event) {
+	        var focused = this._findFocus();
+	        if (focused)
+	            this._blur();
+	    };
+	    /**
+	     * Find the currently selected command.
+	     */
+	    CommandPalette.prototype._findFocus = function () {
+	        var selector = "." + COMMAND_CLASS + "." + FOCUS_CLASS;
+	        return this.node.querySelector(selector);
+	    };
+	    /**
+	     * Select the next command in the given direction.
+	     */
+	    CommandPalette.prototype._focus = function (direction) {
+	        var focused = this._findFocus();
+	        if (!focused) {
+	            if (direction === 1 /* Down */)
+	                return this._focusFirst();
+	            if (direction === 0 /* Up */)
+	                return this._focusLast(true);
+	        }
+	        var registrations = this._buffer.map(function (section) { return section.items; })
+	            .reduce(function (acc, val) { return acc.concat(val); }, []);
+	        var current = registrations.indexOf(focused.getAttribute(REGISTRATION_ID));
+	        var newFocus;
+	        if (direction === 0 /* Up */) {
+	            newFocus = current > 0 ? current - 1 : registrations.length - 1;
+	        }
+	        else {
+	            newFocus = current < registrations.length - 1 ? current + 1 : 0;
+	        }
+	        while (newFocus !== current) {
+	            if (!this._registry[registrations[newFocus]].disabled)
+	                break;
+	            if (direction === 0 /* Up */) {
+	                newFocus = newFocus > 0 ? newFocus - 1 : registrations.length - 1;
+	            }
+	            else {
+	                newFocus = newFocus < registrations.length - 1 ? newFocus + 1 : 0;
+	            }
+	        }
+	        if (newFocus === 0)
+	            return this._focusFirst();
+	        var selector = "[" + REGISTRATION_ID + "=\"" + registrations[newFocus] + "\"]";
+	        var target = this.node.querySelector(selector);
+	        this._focusNode(target, scrollTest(this.contentNode, target));
+	    };
+	    /**
+	     * Select the first command.
+	     */
+	    CommandPalette.prototype._focusFirst = function () {
+	        var selector = "." + COMMAND_CLASS + ":not(." + DISABLED_CLASS + ")";
+	        this.contentNode.scrollTop = 0;
+	        this._focusNode(this.node.querySelectorAll(selector)[0]);
+	    };
+	    /**
+	     * Select the last command.
+	     */
+	    CommandPalette.prototype._focusLast = function (scroll) {
+	        var selector = "." + COMMAND_CLASS + ":not(." + DISABLED_CLASS + ")";
+	        var nodes = this.node.querySelectorAll(selector);
+	        var last = nodes.length - 1;
+	        this._focusNode(nodes[last], scroll);
+	    };
+	    /**
+	     * Select a specific command and optionally scroll it into view.
+	     */
+	    CommandPalette.prototype._focusNode = function (target, scroll) {
+	        var focused = this._findFocus();
+	        if (target === focused)
+	            return;
+	        if (focused)
+	            this._blur();
+	        target.classList.add(FOCUS_CLASS);
+	        if (scroll)
+	            target.scrollIntoView();
+	    };
+	    /**
+	     * Convert an `ICommandPaletteItem` to an `ICommandPaletteItemPrivate`.
+	     */
+	    CommandPalette.prototype._privatize = function (item) {
+	        // By default, until the registry is checked, all added items work.
+	        var disabled = false;
+	        return { disabled: disabled, item: item };
+	    };
+	    /**
+	     * Remove a registered item from the registry and from the sections.
+	     */
+	    CommandPalette.prototype._removeItem = function (registrationID) {
+	        for (var _i = 0, _a = this._sections; _i < _a.length; _i++) {
+	            var section = _a[_i];
+	            for (var _b = 0, _c = section.items; _b < _c.length; _b++) {
+	                var id = _c[_b];
+	                if (id === registrationID) {
+	                    delete this._registry[id];
+	                    arrays.remove(section.items, id);
+	                    return;
+	                }
+	            }
+	        }
+	    };
+	    /**
+	     * Render a section and its commands.
+	     */
+	    CommandPalette.prototype._renderSection = function (privSection) {
+	        var _this = this;
+	        var constructor = this.constructor;
+	        var section = { text: privSection.text, items: [] };
+	        var registrations = [];
+	        var disableds = [];
+	        privSection.items.forEach(function (registrationID) {
+	            var priv = _this._registry[registrationID];
+	            section.items.push(priv.item);
+	            disableds.push(priv.disabled);
+	            registrations.push(registrationID);
+	        });
+	        var fragment = constructor.createSectionFragment(section);
+	        var nodes = fragment.querySelectorAll("." + COMMAND_CLASS);
+	        // Update new command nodes with registrationID and disabled state.
+	        for (var i = 0; i < nodes.length; ++i) {
+	            nodes[i].setAttribute(REGISTRATION_ID, registrations[i]);
+	            if (disableds[i])
+	                nodes[i].classList.add(DISABLED_CLASS);
+	        }
+	        this.contentNode.appendChild(fragment);
+	    };
+	    /**
+	     * Sort the sections by title and their commands by title.
+	     */
+	    CommandPalette.prototype._sort = function () {
+	        var _this = this;
+	        this._sections.sort(function (a, b) { return a.text.localeCompare(b.text); });
+	        this._sections.forEach(function (section) { return section.items.sort(function (a, b) {
+	            var titleA = _this._registry[a].item.title;
+	            var titleB = _this._registry[b].item.title;
+	            return titleA.localeCompare(titleB);
+	        }); });
+	    };
+	    return CommandPalette;
+	})(phosphor_widget_1.Widget);
+	exports.CommandPalette = CommandPalette;
+	var _a;
+
+
+/***/ },
+/* 58 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+	var FuzzySearch = __webpack_require__(59);
+	var IndexOfFS = __webpack_require__(71);
+	var WordCountFS = __webpack_require__(73);
+	var LevenshteinFS = __webpack_require__(75);
+	/**
+	 * An abstract base class for implementing command searchers.
+	 */
+	var CommandMatcher = (function () {
+	    function CommandMatcher() {
+	    }
+	    return CommandMatcher;
+	})();
+	exports.CommandMatcher = CommandMatcher;
+	/**
+	 * A concrete implementation of CommandMatcher.
+	 */
+	var FuzzyMatcher = (function (_super) {
+	    __extends(FuzzyMatcher, _super);
+	    /**
+	     * Constructs a FuzzyMatcher object.
+	     */
+	    function FuzzyMatcher(primary, secondary) {
+	        _super.call(this);
+	        this._primary = primary;
+	        this._secondary = secondary;
+	        this._ind = IndexOfFS({
+	            'minTermLength': 3,
+	            'maxIterations': 500,
+	            'factor': 3
+	        });
+	        this._word = WordCountFS({
+	            'maxWordTolerance': 3,
+	            'factor': 1
+	        });
+	        this._lev = LevenshteinFS({
+	            'maxDistanceTolerance': 3,
+	            'factor': 3
+	        });
+	    }
+	    /**
+	     * Execute the search with the specified string argument.
+	     *
+	     * @param query - The string to be used as the search input.
+	     *
+	     * @param commands - The list of ICommandSearchItem-conforming objects to
+	     *    search over.
+	     *
+	     * @returns - A Promise resolving to a list of ICommandMatchResult
+	     *    objects.
+	     *
+	     * #### Notes
+	     * This method with the private _processResults encapsulates the
+	     * external fuzzy matching library. No details of the library used
+	     * should leak outside of this public API.
+	     */
+	    FuzzyMatcher.prototype.search = function (query, commands) {
+	        // Even though captions are optional, FuzzySearch needs them to be defined.
+	        commands.forEach(function (item) { return item.caption = item.caption || ''; });
+	        var primarySearch = new FuzzySearch(commands, {
+	            'minimumScore': 300,
+	            'termPath': this._primary
+	        });
+	        var secondarySearch = new FuzzySearch(commands, {
+	            'minimumScore': 300,
+	            'termPath': this._secondary
+	        });
+	        primarySearch.addModule(this._ind);
+	        primarySearch.addModule(this._word);
+	        secondarySearch.addModule(this._ind);
+	        secondarySearch.addModule(this._word);
+	        if (query.length > 2) {
+	            primarySearch.addModule(this._lev);
+	            secondarySearch.addModule(this._lev);
+	        }
+	        var primaryResult = this._processResults(primarySearch.search(query));
+	        var secondaryResult = secondarySearch.search(query);
+	        var combined = this._mergeResults(primaryResult, secondaryResult);
+	        return Promise.resolve(combined);
+	    };
+	    FuzzyMatcher.prototype._processResults = function (results) {
+	        var retval = [];
+	        if (!results) {
+	            return retval;
+	        }
+	        for (var _i = 0; _i < results.length; _i++) {
+	            var result = results[_i];
+	            retval.push({ score: result.score, id: result.value.id });
+	        }
+	        return retval;
+	    };
+	    FuzzyMatcher.prototype._mergeResults = function (primary, secondary) {
+	        if (!secondary) {
+	            return primary;
+	        }
+	        var primaryIds = primary.map(function (x) { return x.id; });
+	        for (var i = 0; i < secondary.length; ++i) {
+	            var id = secondary[i].value.id;
+	            var pid = primaryIds.indexOf(id);
+	            if (pid > -1) {
+	                primary[pid]['score'] += secondary[i].score;
+	            }
+	            else {
+	                primary.push(this._processResults([secondary[i]])[0]);
+	            }
+	        }
+	        return primary;
+	    };
+	    return FuzzyMatcher;
+	})(CommandMatcher);
+	exports.FuzzyMatcher = FuzzyMatcher;
+
+
+/***/ },
+/* 59 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"Use Strict";
+
+	var prime = __webpack_require__(60);
+	var trim = __webpack_require__(68);
+
+	var arr = {
+		'forEach': __webpack_require__(69)
+	};
+
+	var obj = {
+		'mixin': __webpack_require__(63),
+		'fromPath': __webpack_require__(70),
+		'create': __webpack_require__(66)
+	};
+
+
+	var FuzzySearch = prime({
+
+	    modules: null,
+
+	    options: {
+	        'caseSensitive': false,
+	        'termPath': '',
+	        'returnEmptyArray': false,
+	        'minimumScore': 0
+	    },
+
+	    constructor: function(searchSet, options) {
+	        this.options = obj.mixin(obj.create(this.options), options);
+	        this.searchSet = searchSet;
+	        this.modules = [];
+	    },
+
+	    addModule: function(mod) {
+	        this.modules.push(mod);
+	    },
+
+	    search: function(needle) {
+	        needle = !this.options.caseSensitive ? trim(needle).toLowerCase() : trim(needle);
+	        var result = [];
+
+	        arr.forEach(this.searchSet, function(value) {
+	            var origValue = value;
+	            var searchValue = this.options.termPath.length === 0 ? value : obj.fromPath(value, this.options.termPath);
+
+	            if (!this.options.caseSensitive) {
+	                searchValue = searchValue.toLowerCase();
+	            }
+
+	            var score = this.getCombinedModulePoints(needle, searchValue);
+
+	            if (score.combined >= this.options.minimumScore) result.push({'score': score.combined, 'details': score.details, 'value': origValue});
+	        }, this);
+
+	        if (!this.options.returnEmptyArray && result.length === 0) {
+	            return null;
+	        }
+
+	        return result.sort(function(a, b) {
+	            return b.score - a.score;
+	        });
+	    },
+
+	    getCombinedModulePoints: function(needle, haystack) {
+	        var result = {'combined': 0, 'details': []};
+	        arr.forEach(this.modules, function(mod) {
+	            var score = mod.search(needle, haystack).getPoints();
+	            var name = mod.getName();
+	            var factor = mod.getFactor();
+
+	            result.combined += factor * score;
+	            result.details.push({'name': name, 'score': score, 'factor': factor});
+	        });
+
+	        return result;
+	    },
+
+	    getMaximumScore: function() {
+	        var factorSum = 0;
+	        arr.forEach(this.modules, function(mod) {
+	            factorSum += mod.getFactor();
+	        });
+
+	        return 100 * factorSum;
+	    }
+
+	});
+
+	module.exports = FuzzySearch;
+
+/***/ },
+/* 60 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	prime
+	 - prototypal inheritance
+	*/"use strict"
+
+	var hasOwn = __webpack_require__(61),
+	    forIn  = __webpack_require__(62),
+	    mixIn  = __webpack_require__(63),
+	    filter = __webpack_require__(65),
+	    create = __webpack_require__(66),
+	    type   = __webpack_require__(67)
+
+	var defineProperty           = Object.defineProperty,
+	    getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor
+
+	try {
+	    defineProperty({}, "~", {})
+	    getOwnPropertyDescriptor({}, "~")
+	} catch (e){
+	    defineProperty = null
+	    getOwnPropertyDescriptor = null
+	}
+
+	var define = function(value, key, from){
+	    defineProperty(this, key, getOwnPropertyDescriptor(from, key) || {
+	        writable: true,
+	        enumerable: true,
+	        configurable: true,
+	        value: value
+	    })
+	}
+
+	var copy = function(value, key){
+	    this[key] = value
+	}
+
+	var implement = function(proto){
+	    forIn(proto, defineProperty ? define : copy, this.prototype)
+	    return this
+	}
+
+	var verbs = /^constructor|inherits|mixin$/
+
+	var prime = function(proto){
+
+	    if (type(proto) === "function") proto = {constructor: proto}
+
+	    var superprime = proto.inherits
+
+	    // if our nice proto object has no own constructor property
+	    // then we proceed using a ghosting constructor that all it does is
+	    // call the parent's constructor if it has a superprime, else an empty constructor
+	    // proto.constructor becomes the effective constructor
+	    var constructor = (hasOwn(proto, "constructor")) ? proto.constructor : (superprime) ? function(){
+	        return superprime.apply(this, arguments)
+	    } : function(){}
+
+	    if (superprime){
+
+	        mixIn(constructor, superprime)
+
+	        var superproto = superprime.prototype
+	        // inherit from superprime
+	        var cproto = constructor.prototype = create(superproto)
+
+	        // setting constructor.parent to superprime.prototype
+	        // because it's the shortest possible absolute reference
+	        constructor.parent = superproto
+	        cproto.constructor = constructor
+	    }
+
+	    if (!constructor.implement) constructor.implement = implement
+
+	    var mixins = proto.mixin
+	    if (mixins){
+	        if (type(mixins) !== "array") mixins = [mixins]
+	        for (var i = 0; i < mixins.length; i++) constructor.implement(create(mixins[i].prototype))
+	    }
+
+	    // implement proto and return constructor
+	    return constructor.implement(filter(proto, function(value, key){
+	        return !key.match(verbs)
+	    }))
+
+	}
+
+	module.exports = prime
+
+
+/***/ },
+/* 61 */
+/***/ function(module, exports) {
+
+	/*
+	object:hasOwn
+	*/"use strict"
+
+	var hasOwnProperty = Object.hasOwnProperty
+
+	var hasOwn = function(self, key){
+	    return hasOwnProperty.call(self, key)
+	}
+
+	module.exports = hasOwn
+
+
+/***/ },
+/* 62 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	object:forIn
+	*/"use strict"
+
+	var has = __webpack_require__(61)
+
+	var forIn = function(self, method, context){
+	    for (var key in self) if (method.call(context, self[key], key, self) === false) break
+	    return self
+	}
+
+	if (!({valueOf: 0}).propertyIsEnumerable("valueOf")){ // fix for stupid IE enumeration bug
+
+	    var buggy = "constructor,toString,valueOf,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString".split(",")
+	    var proto = Object.prototype
+
+	    forIn = function(self, method, context){
+	        for (var key in self) if (method.call(context, self[key], key, self) === false) return self
+	        for (var i = 0; key = buggy[i]; i++){
+	            var value = self[key]
+	            if ((value !== proto[key] || has(self, key)) && method.call(context, value, key, self) === false) break
+	        }
+	        return self
+	    }
+
+	}
+
+	module.exports = forIn
+
+
+/***/ },
+/* 63 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	object:mixIn
+	*/"use strict"
+
+	var forOwn = __webpack_require__(64)
+
+	var copy = function(value, key){
+	    this[key] = value
+	}
+
+	var mixIn = function(self){
+	    for (var i = 1, l = arguments.length; i < l; i++) forOwn(arguments[i], copy, self)
+	    return self
+	}
+
+	module.exports = mixIn
+
+
+/***/ },
+/* 64 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	object:forOwn
+	*/"use strict"
+
+	var forIn  = __webpack_require__(62),
+	    hasOwn = __webpack_require__(61)
+
+	var forOwn = function(self, method, context){
+	    forIn(self, function(value, key){
+	        if (hasOwn(self, key)) return method.call(context, value, key, self)
+	    })
+	    return self
+	}
+
+	module.exports = forOwn
+
+
+/***/ },
+/* 65 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+	object:filter
+	*/"use strict"
+
+	var forIn = __webpack_require__(62)
+
+	var filter = function(self, method, context){
+	    var results = {}
+	    forIn(self, function(value, key){
+	        if (method.call(context, value, key, self)) results[key] = value
+	    })
+	    return results
+	}
+
+	module.exports = filter
+
+
+/***/ },
+/* 66 */
+/***/ function(module, exports) {
+
+	/*
+	object:create
+	*/"use strict"
+
+	var create = function(self){
+	    var constructor = function(){}
+	    constructor.prototype = self
+	    return new constructor
+	}
+
+	module.exports = create
+
+
+/***/ },
+/* 67 */
+/***/ function(module, exports) {
+
+	/*
+	type
+	*/"use strict"
+
+	var toString = Object.prototype.toString,
+	    types = /number|object|array|string|function|date|regexp|boolean/
+
+	var type = function(object){
+	    if (object == null) return "null"
+	    var string = toString.call(object).slice(8, -1).toLowerCase()
+	    if (string === "number" && isNaN(object)) return "null"
+	    if (types.test(string)) return string
+	    return "object"
+	}
+
+	module.exports = type
+
+
+/***/ },
+/* 68 */
+/***/ function(module, exports) {
+
+	/*
+	string:trim
+	*/"use strict"
+
+	var trim = function(self){
+	    return (self + "").replace(/^\s+|\s+$/g, "")
+	}
+
+	module.exports = trim
+
+
+/***/ },
+/* 69 */
+/***/ function(module, exports) {
+
+	/*
+	array:forEach
+	*/"use strict"
+
+	var forEach = function(self, method, context){
+	    for (var i = 0, l = self.length >>> 0; i < l; i++){
+	        if (method.call(context, self[i], i, self) === false) break
+	    }
+	    return self
+	}
+
+	module.exports = forEach
+
+
+/***/ },
+/* 70 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var hasOwn = __webpack_require__(61);
+
+	function fromPath(source, parts) {
+		"use strict";
+
+		if (typeof parts == 'string') parts = parts.split('.');
+		for (var i = 0, l = parts.length; i < l; i++) {
+			if (hasOwn(source, parts[i])) {
+				source = source[parts[i]];
+			} else {
+				return null;
+			}
+		}
+		return source;
+	}
+
+	module.exports = fromPath;
+
+/***/ },
+/* 71 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"Use Strict";
+
+	var prime = __webpack_require__(60);
+	var FSModule = __webpack_require__(72);
+	var arr = {
+		'forEach': __webpack_require__(69)
+	};
+
+	var IndexOfFS = prime({
+
+	    inherits: FSModule,
+
+	    name: 'IndexOfFS',
+	    options: {
+	        'minTermLength': 3,
+	        'maxIterations': 500,
+	        'factor': 1
+	    },
+
+	    search: function(searchTerm, searchHaystack) {
+	        this.lastTerm = searchTerm;
+	        this.lastHaystack = searchHaystack;
+	        var minLength = searchTerm.length >= this.options.minTermLength ? this.options.minTermLength : searchTerm.length;
+
+	        var matches = [];
+	        var iterations = 0;
+	        do {
+	            var cm = this.getClosestMatch(searchTerm, searchHaystack);
+	            if (cm.length >= minLength) {
+	                matches.push(cm);
+	            }
+
+	            var substrc = (cm.length - 1 > 0) ? cm.length : 1;
+	            searchTerm = searchTerm.substr(substrc);
+	            iterations++;
+	        } while (searchTerm.length >= minLength && iterations <= this.options.maxIterations);
+
+
+	        this.lastResults = matches;
+	        return this;
+	    },
+
+	    getClosestMatch: function(searchTerm, haystack) {
+	        if (haystack.indexOf(searchTerm) != -1) {
+	            return searchTerm;
+	        }
+
+	        var length = searchTerm.length;
+
+	        for (var i = 0; i <= length; i++) {
+	            var term = searchTerm.substr(0, i);
+	            if (haystack.indexOf(term) != -1) {
+	                continue;
+	            }
+
+	            return term.substr(0, i - 1);
+	        }
+
+	        return "";
+	    },
+
+	    getPoints: function() {
+	        var sum = 0;
+	        arr.forEach(this.lastResults, function(result) {
+	            sum += result.length;
+	        });
+
+	        return 100 / this.lastTerm.length * sum;
+	    }
+
+	});
+
+	module.exports = function(options) {return new IndexOfFS(options);};
+
+/***/ },
+/* 72 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"Use Strict";
+
+	var prime = __webpack_require__(60);
+	var obj = {
+		'mixin': __webpack_require__(63),
+		'create': __webpack_require__(66)
+	};
+	var FSModule = prime({
+
+	    lastTerm: '',
+	    lastHaystack: '',
+	    lastResults: null,
+
+	    options: {
+	        'factor': 1
+	    },
+
+	    constructor: function(options) {
+	        this.options = obj.mixin(obj.create(this.options), options);
+	        this.lastResults = [];
+	    },
+
+	    search: function(searchTerm) {
+	        throw new Error("search method not implemented");
+	    },
+
+	    getPoints: function() {
+	        throw new Error("getPoints method not implemented");
+	    },
+
+	    getMatches: function() {
+	        return this.lastResults;
+	    },
+
+	    getFactor: function() {
+	        return this.options.factor || 1;
+	    },
+
+	    getName: function() {
+	        if (!this.name) throw new Error("set module name!");
+
+	        return this.name;
+	    }
+
+	});
+
+	module.exports = FSModule;
+
+/***/ },
+/* 73 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"Use Strict";
+
+	var prime = __webpack_require__(60);
+	var FSModule = __webpack_require__(72);
+	var number = {
+		'limit': __webpack_require__(74)
+	};
+
+	var WordCountFS = prime({
+
+	    inherits: FSModule,
+
+	    name: 'WordCountFS',
+	    options: {
+	        'maxWordTolerance': 3
+	    },
+
+	    search: function(searchTerm, haystack) {
+	        this.lastTerm = searchTerm;
+	        this.lastHaystack = haystack;
+
+	        return this;
+	    },
+
+	    getPoints: function() {
+	        var needleWords = this.lastTerm.split(' ');
+	        var haystackWords = this.lastHaystack.split(' ');
+
+	        return 100 / this.options.maxWordTolerance * (this.options.maxWordTolerance - number.limit(Math.abs(haystackWords.length - needleWords.length), 0, this.options.maxWordTolerance));
+	    }
+
+	});
+
+	module.exports = function(options) {return new WordCountFS(options);};
+
+/***/ },
+/* 74 */
+/***/ function(module, exports) {
+
+	/*
+	number:limit
+	*/"use strict"
+
+	var limit = function(self, min, max){
+	    return Math.min(max, Math.max(min, self))
+	}
+
+	module.exports = limit
+
+
+/***/ },
+/* 75 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"Use Strict";
+
+	var prime = __webpack_require__(60);
+	var FSModule = __webpack_require__(72);
+	var arr = {
+		'forEach': __webpack_require__(69)
+	};
+	var lev = __webpack_require__(76);
+
+	var LevenshteinFS = prime({
+
+	    inherits: FSModule,
+
+	    name: 'LevenshteinFS',
+	    options: {
+	        'maxDistanceTolerance': 3
+	    },
+
+	    search: function(term, haystack) {
+	        this.lastTerm = term;
+	        this.lastHaystack = haystack;
+
+	        var needleWords = term.split(' ');
+	        var haystackWords = haystack.split(' ');
+
+	        var matches = [];
+
+	        var nwl = needleWords.length;
+	        var hwl = haystackWords.length;
+	        for (var i = 0; i < nwl; i++) {
+	            for (var j = 0; j < hwl; j++) {
+	                var needleWord = needleWords[i];
+	                var haystackWord = haystackWords[j];
+
+	                var score = lev(needleWord, haystackWord);
+
+	                if (score <= this.options.maxDistanceTolerance) {
+	                    matches.push({'match': needleWord, 'score': score});
+	                }
+	            }
+	        }
+
+	        this.lastResults = matches;
+
+	        return this;
+	    },
+
+	    getPoints: function() {
+	        var haystackWords = this.lastHaystack.split(' ');
+
+	        var combinedScore = 0;
+	        arr.forEach(this.lastResults, function(result) {
+	            combinedScore += result.score;
+	        });
+
+	        combinedScore += (haystackWords.length - this.lastResults.length) * this.options.maxDistanceTolerance;
+
+	        var points = 50 / haystackWords.length * this.lastResults.length;
+	        points += 50 / (haystackWords.length * this.options.maxDistanceTolerance) * (haystackWords.length * this.options.maxDistanceTolerance - combinedScore);
+
+	        return points;
+	    }
+
+	});
+
+	module.exports = function(options) {return new LevenshteinFS(options);};
+
+/***/ },
+/* 76 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;(function(root, factory){
+	  if (true) {
+	    !(__WEBPACK_AMD_DEFINE_RESULT__ = function(){
+	      return factory(root);
+	    }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else if (typeof module == 'object' && module && module.exports) {
+	    module.exports = factory(root);
+	  } else {
+	    root.Levenshtein = factory(root);
+	  }
+	}(this, function(root){
+
+	  function forEach( array, fn ) { var i, length
+	    i = -1
+	    length = array.length
+	    while ( ++i < length )
+	      fn( array[ i ], i, array )
+	  }
+
+	  function map( array, fn ) { var result
+	    result = Array( array.length )
+	    forEach( array, function ( val, i, array ) {
+	      result[i] = fn( val, i, array )
+	    })
+	    return result
+	  }
+
+	  function reduce( array, fn, accumulator ) {
+	    forEach( array, function( val, i, array ) {
+	      accumulator = fn( val, i, array )
+	    })
+	    return accumulator
+	  }
+
+	  // Levenshtein distance
+	  function Levenshtein( str_m, str_n ) { var previous, current, matrix
+	    // Constructor
+	    matrix = this._matrix = []
+
+	    // Sanity checks
+	    if ( str_m == str_n )
+	      return this.distance = 0
+	    else if ( str_m == '' )
+	      return this.distance = str_n.length
+	    else if ( str_n == '' )
+	      return this.distance = str_m.length
+	    else {
+	      // Danger Will Robinson
+	      previous = [ 0 ]
+	      forEach( str_m, function( v, i ) { i++, previous[ i ] = i } )
+
+	      matrix[0] = previous
+	      forEach( str_n, function( n_val, n_idx ) {
+	        current = [ ++n_idx ]
+	        forEach( str_m, function( m_val, m_idx ) {
+	          m_idx++
+	          if ( str_m.charAt( m_idx - 1 ) == str_n.charAt( n_idx - 1 ) )
+	            current[ m_idx ] = previous[ m_idx - 1 ]
+	          else
+	            current[ m_idx ] = Math.min
+	              ( previous[ m_idx ]     + 1   // Deletion
+	              , current[  m_idx - 1 ] + 1   // Insertion
+	              , previous[ m_idx - 1 ] + 1   // Subtraction
+	              )
+	        })
+	        previous = current
+	        matrix[ matrix.length ] = previous
+	      })
+
+	      return this.distance = current[ current.length - 1 ]
+	    }
+	  }
+
+	  Levenshtein.prototype.toString = Levenshtein.prototype.inspect = function inspect ( no_print ) { var matrix, max, buff, sep, rows
+	    matrix = this.getMatrix()
+	    max = reduce( matrix,function( m, o ) {
+	      return Math.max( m, reduce( o, Math.max, 0 ) )
+	    }, 0 )
+	    buff = Array( ( max + '' ).length ).join( ' ' )
+
+	    sep = []
+	    while ( sep.length < (matrix[0] && matrix[0].length || 0) )
+	      sep[ sep.length ] = Array( buff.length + 1 ).join( '-' )
+	    sep = sep.join( '-+' ) + '-'
+
+	    rows = map( matrix, function( row ) { var cells
+	      cells = map( row, function( cell ) {
+	        return ( buff + cell ).slice( - buff.length )
+	      })
+	      return cells.join( ' |' ) + ' '
+	    })
+
+	    return rows.join( "\n" + sep + "\n" )
+	  }
+
+	  Levenshtein.prototype.getMatrix = function () {
+	    return this._matrix.slice()
+	  }
+
+	  Levenshtein.prototype.valueOf = function() {
+	    return this.distance
+	  }
+
+	  return Levenshtein
+
+	}));
+
+
+/***/ },
+/* 77 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(78);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(18)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../css-loader/index.js!./palette.css", function() {
+				var newContent = require("!!./../../../css-loader/index.js!./palette.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 78 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(17)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "/*-----------------------------------------------------------------------------\r\n| Copyright (c) 2014-2016, PhosphorJS Contributors\r\n|\r\n| Distributed under the terms of the BSD 3-Clause License.\r\n|\r\n| The full license is in the file LICENSE, distributed with this software.\r\n|----------------------------------------------------------------------------*/\r\n.p-CommandPalette {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n\r\n.p-CommandPalette-search {\r\n  flex: 0 0 auto;\r\n}\r\n\r\n\r\n.p-CommandPalette-content {\r\n  flex: 1 1 auto;\r\n  list-style-type: none;\r\n  margin: 0;\r\n  padding: 0;\r\n  min-height: 0;\r\n  overflow: auto;\r\n}\r\n\r\n.p-CommandPalette-header {\r\n  display: block;\r\n}\r\n\r\n.p-CommandPalette-command {\r\n  display: block;\r\n  text-decoration: none;\r\n}\r\n\r\n.p-CommandPalette-shortcut {\r\n  float: right;\r\n}\r\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12218,8 +14040,7 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
-	var phosphor_command_1 = __webpack_require__(56);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var phosphor_widget_1 = __webpack_require__(25);
 	function resolve(container) {
 	    return container.resolve(RedHandler).then(function (handler) {
 	        handler.run();
@@ -12239,15 +14060,9 @@
 	        widget.addClass('red-content');
 	        widget.title.text = 'Red';
 	        this._shell.addToRightArea(widget, { rank: 30 });
-	        var commands = [
-	            {
-	                id: 'demo:red',
-	                command: new phosphor_command_1.DelegateCommand(function () {
-	                    console.log('Red Command invoked');
-	                })
-	            }
-	        ];
-	        this._commandRegistry.add(commands);
+	        this._commandRegistry.add('demo:red', function () {
+	            console.log('Red invoked.');
+	        });
 	    };
 	    RedHandler.requires = [phosphide_1.IAppShell, phosphide_1.ICommandRegistry];
 	    return RedHandler;
@@ -12255,189 +14070,7 @@
 
 
 /***/ },
-/* 56 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
-	|
-	| Distributed under the terms of the BSD 3-Clause License.
-	|
-	| The full license is in the file LICENSE, distributed with this software.
-	|----------------------------------------------------------------------------*/
-	'use strict';
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var phosphor_signaling_1 = __webpack_require__(26);
-	/**
-	 * An abstract base class for implementing concrete commands.
-	 */
-	var Command = (function () {
-	    function Command() {
-	    }
-	    Object.defineProperty(Command.prototype, "changed", {
-	        /**
-	         * A signal emitted when the command's state changes.
-	         *
-	         * #### Notes
-	         * This should be emitted by a subclass as necessary.
-	         *
-	         * This is a pure delegate to the [[changedSignal]].
-	         */
-	        get: function () {
-	            return Command.changedSignal.bind(this);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    /**
-	     * Test whether the command is enabled.
-	     *
-	     * @returns `true` if the command is enabled, `false` otherwise.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * The default implementation of this method returns `true`.
-	     */
-	    Command.prototype.isEnabled = function () {
-	        return true;
-	    };
-	    /**
-	     * Test whether the command is checked.
-	     *
-	     * @returns `true` if the command is checked, `false` otherwise.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * The default implementation of this method returns `false`.
-	     */
-	    Command.prototype.isChecked = function () {
-	        return false;
-	    };
-	    /**
-	     * A signal emitted when the command's state changes.
-	     *
-	     * **See also:** [[changed]]
-	     */
-	    Command.changedSignal = new phosphor_signaling_1.Signal();
-	    return Command;
-	})();
-	exports.Command = Command;
-	/**
-	 * A concrete implementation of [[ICommand]].
-	 *
-	 * A `DelegateCommand` wraps a function to facilitate the creation of
-	 * simple commands without requiring subclassing or extra boilerplate.
-	 */
-	var DelegateCommand = (function (_super) {
-	    __extends(DelegateCommand, _super);
-	    /**
-	     * Construct a new delegate command.
-	     *
-	     * @param execute - The function which executes the command logic.
-	     */
-	    function DelegateCommand(execute) {
-	        _super.call(this);
-	        this._enabled = true;
-	        this._checked = false;
-	        this._execute = execute;
-	    }
-	    Object.defineProperty(DelegateCommand.prototype, "enabled", {
-	        /**
-	         * Get the enabled state of the delegate command.
-	         */
-	        get: function () {
-	            return this._enabled;
-	        },
-	        /**
-	         * Set the enabled state of the delegate command.
-	         *
-	         * #### Notes
-	         * This will emit the [[changed]] signal if the state changes.
-	         */
-	        set: function (value) {
-	            if (this._enabled === value) {
-	                return;
-	            }
-	            this._enabled = value;
-	            this.changed.emit(void 0);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    Object.defineProperty(DelegateCommand.prototype, "checked", {
-	        /**
-	         * Get the checked state of the delegate command.
-	         */
-	        get: function () {
-	            return this._checked;
-	        },
-	        /**
-	         * Set the checked state of the delegate command.
-	         *
-	         * #### Notes
-	         * This will emit the [[changed]] signal if the state changes.
-	         */
-	        set: function (value) {
-	            if (this._checked === value) {
-	                return;
-	            }
-	            this._checked = value;
-	            this.changed.emit(void 0);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    /**
-	     * Test whether the command is enabled.
-	     *
-	     * @returns `true` if the command is enabled, `false` otherwise.
-	     *
-	     * #### Notes
-	     * This returns the command's [[enabled]] state.
-	     */
-	    DelegateCommand.prototype.isEnabled = function () {
-	        return this._enabled;
-	    };
-	    /**
-	     * Test whether the command is checked.
-	     *
-	     * @returns `true` if the command is checked, `false` otherwise.
-	     *
-	     * #### Notes
-	     * This returns the command's [[checked]] state.
-	     */
-	    DelegateCommand.prototype.isChecked = function () {
-	        return this._checked;
-	    };
-	    /**
-	     * Execute the command with the specified arguments.
-	     *
-	     * @param args - The arguments for the command. The args should be
-	     *   simple JSON types. If the command does not require arguments,
-	     *   this may be `null`.
-	     *
-	     * #### Notes
-	     * Calling `execute` when `isEnabled` returns `false` will result
-	     * in undefined behavior.
-	     */
-	    DelegateCommand.prototype.execute = function (args) {
-	        this._execute.call(void 0, args);
-	    };
-	    return DelegateCommand;
-	})(Command);
-	exports.DelegateCommand = DelegateCommand;
-	//# sourceMappingURL=index.js.map
-
-/***/ },
-/* 57 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12449,8 +14082,7 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
-	var phosphor_command_1 = __webpack_require__(56);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var phosphor_widget_1 = __webpack_require__(25);
 	function resolve(container) {
 	    return container.resolve(BlueHandler).then(function (handler) {
 	        handler.run();
@@ -12470,15 +14102,9 @@
 	        widget.addClass('blue-content');
 	        widget.title.text = 'Blue';
 	        this._shell.addToLeftArea(widget, { rank: 10 });
-	        var commands = [
-	            {
-	                id: 'demo:blue',
-	                command: new phosphor_command_1.DelegateCommand(function () {
-	                    console.log('Blue Command invoked');
-	                })
-	            }
-	        ];
-	        this._commandRegistry.add(commands);
+	        this._commandRegistry.add('demo:blue', function () {
+	            console.log('Blue invoked.');
+	        });
 	    };
 	    BlueHandler.requires = [phosphide_1.IAppShell, phosphide_1.ICommandRegistry];
 	    return BlueHandler;
@@ -12486,7 +14112,7 @@
 
 
 /***/ },
-/* 58 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12498,8 +14124,7 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
-	var phosphor_command_1 = __webpack_require__(56);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var phosphor_widget_1 = __webpack_require__(25);
 	function resolve(container) {
 	    return container.resolve(GreenHandler).then(function (handler) {
 	        handler.run();
@@ -12519,15 +14144,9 @@
 	        widget.addClass('green-content');
 	        widget.title.text = 'Green';
 	        this._shell.addToRightArea(widget, { rank: 40 });
-	        var commands = [
-	            {
-	                id: 'demo:green',
-	                command: new phosphor_command_1.DelegateCommand(function () {
-	                    console.log('Green Command invoked');
-	                })
-	            }
-	        ];
-	        this._commandRegistry.add(commands);
+	        this._commandRegistry.add('demo:green', function () {
+	            console.log('Green invoked.');
+	        });
 	    };
 	    GreenHandler.requires = [phosphide_1.IAppShell, phosphide_1.ICommandRegistry];
 	    return GreenHandler;
@@ -12535,7 +14154,7 @@
 
 
 /***/ },
-/* 59 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12547,8 +14166,7 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
-	var phosphor_command_1 = __webpack_require__(56);
-	var phosphor_widget_1 = __webpack_require__(24);
+	var phosphor_widget_1 = __webpack_require__(25);
 	function resolve(container) {
 	    return container.resolve(YellowHandler).then(function (handler) {
 	        handler.run();
@@ -12568,15 +14186,9 @@
 	        widget.addClass('yellow-content');
 	        widget.title.text = 'Yellow';
 	        this._shell.addToLeftArea(widget, { rank: 20 });
-	        var commands = [
-	            {
-	                id: 'demo:yellow',
-	                command: new phosphor_command_1.DelegateCommand(function () {
-	                    console.log('Yellow Command invoked');
-	                })
-	            }
-	        ];
-	        this._commandRegistry.add(commands);
+	        this._commandRegistry.add('demo:yellow', function () {
+	            console.log('Yellow invoked.');
+	        });
 	    };
 	    YellowHandler.requires = [phosphide_1.IAppShell, phosphide_1.ICommandRegistry];
 	    return YellowHandler;
@@ -12584,7 +14196,7 @@
 
 
 /***/ },
-/* 60 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12600,11 +14212,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var CodeMirror = __webpack_require__(61);
+	var CodeMirror = __webpack_require__(84);
 	var phosphide_1 = __webpack_require__(1);
-	var phosphor_widget_1 = __webpack_require__(24);
-	__webpack_require__(62);
-	__webpack_require__(64);
+	var phosphor_widget_1 = __webpack_require__(25);
+	__webpack_require__(85);
+	__webpack_require__(87);
 	function resolve(container) {
 	    return container.resolve(EditorHandler).then(function (handler) { handler.run(); });
 	}
@@ -12664,7 +14276,7 @@
 
 
 /***/ },
-/* 61 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -21557,16 +23169,16 @@
 
 
 /***/ },
-/* 62 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(63);
+	var content = __webpack_require__(86);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(17)(content, {});
+	var update = __webpack_require__(18)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -21583,10 +23195,10 @@
 	}
 
 /***/ },
-/* 63 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(16)();
+	exports = module.exports = __webpack_require__(17)();
 	// imports
 
 
@@ -21597,7 +23209,7 @@
 
 
 /***/ },
-/* 64 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -21607,7 +23219,7 @@
 
 	(function(mod) {
 	  if (true) // CommonJS
-	    mod(__webpack_require__(61));
+	    mod(__webpack_require__(84));
 	  else if (typeof define == "function" && define.amd) // AMD
 	    define(["../../lib/codemirror"], mod);
 	  else // Plain browser env
