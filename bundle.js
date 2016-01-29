@@ -66,7 +66,8 @@
 	    __webpack_require__(80),
 	    __webpack_require__(81),
 	    __webpack_require__(82),
-	    __webpack_require__(83)
+	    __webpack_require__(83),
+	    __webpack_require__(84)
 	  ]).then(function() {
 	    console.log('loading finished');
 	  });
@@ -6229,6 +6230,9 @@
 	    Object.defineProperty(Title.prototype, "icon", {
 	        /**
 	         * Get the icon class name for the title.
+	         *
+	         * #### Notes
+	         * The default value is an empty string.
 	         */
 	        get: function () {
 	            return TitlePrivate.iconProperty.get(this);
@@ -6248,6 +6252,9 @@
 	    Object.defineProperty(Title.prototype, "closable", {
 	        /**
 	         * Get the closable state for the title.
+	         *
+	         * #### Notes
+	         * The default value is `false`.
 	         */
 	        get: function () {
 	            return TitlePrivate.closableProperty.get(this);
@@ -6267,6 +6274,9 @@
 	    Object.defineProperty(Title.prototype, "className", {
 	        /**
 	         * Get the extra class name for the title.
+	         *
+	         * #### Notes
+	         * The default value is an empty string.
 	         */
 	        get: function () {
 	            return TitlePrivate.classNameProperty.get(this);
@@ -6383,7 +6393,7 @@
 
 
 	// module
-	exports.push([module.id, "/*-----------------------------------------------------------------------------\n| Copyright (c) 2014-2015, PhosphorJS Contributors\n|\n| Distributed under the terms of the BSD 3-Clause License.\n|\n| The full license is in the file LICENSE, distributed with this software.\n|----------------------------------------------------------------------------*/\n.p-Widget {\n  box-sizing: border-box;\n  position: relative;\n  overflow: hidden;\n  cursor: default;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n  user-select: none;\n}\n\n\n.p-Widget.p-mod-hidden {\n  display: none;\n}\n", ""]);
+	exports.push([module.id, "/*-----------------------------------------------------------------------------\r\n| Copyright (c) 2014-2015, PhosphorJS Contributors\r\n|\r\n| Distributed under the terms of the BSD 3-Clause License.\r\n|\r\n| The full license is in the file LICENSE, distributed with this software.\r\n|----------------------------------------------------------------------------*/\r\n.p-Widget {\r\n  box-sizing: border-box;\r\n  position: relative;\r\n  overflow: hidden;\r\n  cursor: default;\r\n  -webkit-user-select: none;\r\n  -moz-user-select: none;\r\n  -ms-user-select: none;\r\n  user-select: none;\r\n}\r\n\r\n\r\n.p-Widget.p-mod-hidden {\r\n  display: none;\r\n}\r\n", ""]);
 
 	// exports
 
@@ -14032,6 +14042,43 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
+	var phosphide_1 = __webpack_require__(1);
+	function resolve(container) {
+	    return container.resolve(Application).catch(function (error) {
+	        console.warn('Application instance failed to load:', error);
+	    });
+	}
+	exports.resolve = resolve;
+	/**
+	 * Application injects the UI chrome (palette, menus, etc.) into an `IAppShell`.
+	 */
+	var Application = (function () {
+	    function Application(shell, palette) {
+	        palette.title.text = 'Commands';
+	        shell.addToLeftArea(palette, { rank: 40 });
+	        shell.attach(document.body);
+	        window.addEventListener('resize', function () { shell.update(); });
+	    }
+	    Application.create = function (shell, palette) {
+	        return new Application(shell, palette);
+	    };
+	    Application.requires = [phosphide_1.IAppShell, phosphide_1.ICommandPalette];
+	    return Application;
+	})();
+
+
+/***/ },
+/* 80 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*-----------------------------------------------------------------------------
 	| Copyright (c) 2014-2015, PhosphorJS Contributors
 	|
 	| Distributed under the terms of the BSD 3-Clause License.
@@ -14070,7 +14117,7 @@
 
 
 /***/ },
-/* 80 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -14112,7 +14159,7 @@
 
 
 /***/ },
-/* 81 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -14154,7 +14201,7 @@
 
 
 /***/ },
-/* 82 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -14196,7 +14243,7 @@
 
 
 /***/ },
-/* 83 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -14212,11 +14259,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var CodeMirror = __webpack_require__(84);
+	var CodeMirror = __webpack_require__(85);
 	var phosphide_1 = __webpack_require__(1);
 	var phosphor_widget_1 = __webpack_require__(25);
-	__webpack_require__(85);
-	__webpack_require__(87);
+	__webpack_require__(86);
+	__webpack_require__(88);
 	function resolve(container) {
 	    return container.resolve(EditorHandler).then(function (handler) { handler.run(); });
 	}
@@ -14276,7 +14323,7 @@
 
 
 /***/ },
-/* 84 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -15539,6 +15586,7 @@
 	      });
 
 	      function prepareCopyCut(e) {
+	        if (signalDOMEvent(cm, e)) return
 	        if (cm.somethingSelected()) {
 	          lastCopied = cm.getSelections();
 	          if (input.inaccurateSelection) {
@@ -15896,6 +15944,7 @@
 	      });
 
 	      function onCopyCut(e) {
+	        if (signalDOMEvent(cm, e)) return
 	        if (cm.somethingSelected()) {
 	          lastCopied = cm.getSelections();
 	          if (e.type == "cut") cm.replaceSelection("", null, "cut");
@@ -17714,7 +17763,7 @@
 	      return dx * dx + dy * dy > 20 * 20;
 	    }
 	    on(d.scroller, "touchstart", function(e) {
-	      if (!isMouseLikeTouchEvent(e)) {
+	      if (!signalDOMEvent(cm, e) && !isMouseLikeTouchEvent(e)) {
 	        clearTimeout(touchFinished);
 	        var now = +new Date;
 	        d.activeTouch = {start: now, moved: false,
@@ -17843,7 +17892,7 @@
 	  // not interfere with, such as a scrollbar or widget.
 	  function onMouseDown(e) {
 	    var cm = this, display = cm.display;
-	    if (display.activeTouch && display.input.supportsTouch() || signalDOMEvent(cm, e)) return;
+	    if (signalDOMEvent(cm, e) || display.activeTouch && display.input.supportsTouch()) return;
 	    display.shift = e.shiftKey;
 
 	    if (eventInWidget(display, e)) {
@@ -19095,10 +19144,9 @@
 	  function findPosH(doc, pos, dir, unit, visually) {
 	    var line = pos.line, ch = pos.ch, origDir = dir;
 	    var lineObj = getLine(doc, line);
-	    var possible = true;
 	    function findNextLine() {
 	      var l = line + dir;
-	      if (l < doc.first || l >= doc.first + doc.size) return (possible = false);
+	      if (l < doc.first || l >= doc.first + doc.size) return false
 	      line = l;
 	      return lineObj = getLine(doc, l);
 	    }
@@ -19108,14 +19156,16 @@
 	        if (!boundToLine && findNextLine()) {
 	          if (visually) ch = (dir < 0 ? lineRight : lineLeft)(lineObj);
 	          else ch = dir < 0 ? lineObj.text.length : 0;
-	        } else return (possible = false);
+	        } else return false
 	      } else ch = next;
 	      return true;
 	    }
 
-	    if (unit == "char") moveOnce();
-	    else if (unit == "column") moveOnce(true);
-	    else if (unit == "word" || unit == "group") {
+	    if (unit == "char") {
+	      moveOnce()
+	    } else if (unit == "column") {
+	      moveOnce(true)
+	    } else if (unit == "word" || unit == "group") {
 	      var sawType = null, group = unit == "group";
 	      var helper = doc.cm && doc.cm.getHelper(pos, "wordChars");
 	      for (var first = true;; first = false) {
@@ -19136,7 +19186,7 @@
 	      }
 	    }
 	    var result = skipAtomic(doc, Pos(line, ch), pos, origDir, true);
-	    if (!possible) result.hitSide = true;
+	    if (!cmp(pos, result)) result.hitSide = true;
 	    return result;
 	  }
 
@@ -21394,14 +21444,14 @@
 	        if (endStyles) for (var j = 0; j < endStyles.length; j += 2)
 	          if (endStyles[j + 1] == nextChange) spanEndStyle += " " + endStyles[j]
 
+	        if (!collapsed || collapsed.from == pos) for (var j = 0; j < foundBookmarks.length; ++j)
+	          buildCollapsedSpan(builder, 0, foundBookmarks[j]);
 	        if (collapsed && (collapsed.from || 0) == pos) {
 	          buildCollapsedSpan(builder, (collapsed.to == null ? len + 1 : collapsed.to) - pos,
 	                             collapsed.marker, collapsed.from == null);
 	          if (collapsed.to == null) return;
 	          if (collapsed.to == pos) collapsed = false;
 	        }
-	        if (!collapsed && foundBookmarks.length) for (var j = 0; j < foundBookmarks.length; ++j)
-	          buildCollapsedSpan(builder, 0, foundBookmarks[j]);
 	      }
 	      if (pos >= len) break;
 
@@ -23162,20 +23212,20 @@
 
 	  // THE END
 
-	  CodeMirror.version = "5.10.0";
+	  CodeMirror.version = "5.11.0";
 
 	  return CodeMirror;
 	});
 
 
 /***/ },
-/* 85 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(86);
+	var content = __webpack_require__(87);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(18)(content, {});
@@ -23195,7 +23245,7 @@
 	}
 
 /***/ },
-/* 86 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(17)();
@@ -23209,7 +23259,7 @@
 
 
 /***/ },
-/* 87 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -23219,13 +23269,18 @@
 
 	(function(mod) {
 	  if (true) // CommonJS
-	    mod(__webpack_require__(84));
+	    mod(__webpack_require__(85));
 	  else if (typeof define == "function" && define.amd) // AMD
 	    define(["../../lib/codemirror"], mod);
 	  else // Plain browser env
 	    mod(CodeMirror);
 	})(function(CodeMirror) {
 	"use strict";
+
+	function expressionAllowed(stream, state, backUp) {
+	  return /^(?:operator|sof|keyword c|case|new|[\[{}\(,;:]|=>)$/.test(state.lastType) ||
+	    (state.lastType == "quasi" && /\{\s*$/.test(stream.string.slice(0, stream.pos - (backUp || 0))))
+	}
 
 	CodeMirror.defineMode("javascript", function(config, parserConfig) {
 	  var indentUnit = config.indentUnit;
@@ -23340,8 +23395,7 @@
 	      } else if (stream.eat("/")) {
 	        stream.skipToEnd();
 	        return ret("comment", "comment");
-	      } else if (/^(?:operator|sof|keyword c|case|new|[\[{}\(,;:])$/.test(state.lastType) ||
-	                 (state.lastType == "quasi" && /\{\s*$/.test(stream.string.slice(0, stream.pos - 1)))) {
+	      } else if (expressionAllowed(stream, state, 1)) {
 	        readRegexp(stream);
 	        stream.match(/^\b(([gimyu])(?![gimyu]*\2))+\b/);
 	        return ret("regexp", "string-2");
@@ -23747,6 +23801,7 @@
 	    }
 	    if (type == "variable") cx.marked = "property";
 	    if (type == "spread") return cont(pattern);
+	    if (type == "}") return pass();
 	    return cont(expect(":"), pattern, maybeAssign);
 	  }
 	  function maybeAssign(_type, value) {
@@ -23869,7 +23924,7 @@
 	        lexical: new JSLexical((basecolumn || 0) - indentUnit, 0, "block", false),
 	        localVars: parserConfig.localVars,
 	        context: parserConfig.localVars && {vars: parserConfig.localVars},
-	        indented: 0
+	        indented: basecolumn || 0
 	      };
 	      if (parserConfig.globalVars && typeof parserConfig.globalVars == "object")
 	        state.globalVars = parserConfig.globalVars;
@@ -23925,7 +23980,13 @@
 
 	    helperType: jsonMode ? "json" : "javascript",
 	    jsonldMode: jsonldMode,
-	    jsonMode: jsonMode
+	    jsonMode: jsonMode,
+
+	    expressionAllowed: expressionAllowed,
+	    skipExpression: function(state) {
+	      var top = state.cc[state.cc.length - 1]
+	      if (top == expression || top == expressionNoComma) state.cc.pop()
+	    }
 	  };
 	});
 
