@@ -62,13 +62,13 @@
 	    __webpack_require__(9),
 	    __webpack_require__(56),
 	    __webpack_require__(57),
-	    __webpack_require__(82),
-	    __webpack_require__(88),
-	    __webpack_require__(89),
-	    __webpack_require__(90),
-	    __webpack_require__(91),
-	    __webpack_require__(92),
-	    __webpack_require__(93)
+	    __webpack_require__(65),
+	    __webpack_require__(70),
+	    __webpack_require__(71),
+	    __webpack_require__(72),
+	    __webpack_require__(73),
+	    __webpack_require__(74),
+	    __webpack_require__(75)
 	  ]).then(function() {
 	    console.log('loading finished');
 	  });
@@ -129,24 +129,24 @@
 	    var pluginSet = PluginsPrivate.pluginSetProperty.get(container);
 	    // Filter for the new plugins.
 	    var newPlugins = [];
-	    for (var _i = 0; _i < plugins.length; _i++) {
-	        var plugin = plugins[_i];
+	    for (var _i = 0, plugins_1 = plugins; _i < plugins_1.length; _i++) {
+	        var plugin = plugins_1[_i];
 	        if (plugin && !pluginSet.has(plugin)) {
 	            pluginSet.add(plugin);
 	            newPlugins.push(plugin);
 	        }
 	    }
 	    // Register the new plugins.
-	    for (var _a = 0; _a < newPlugins.length; _a++) {
-	        var plugin = newPlugins[_a];
+	    for (var _a = 0, newPlugins_1 = newPlugins; _a < newPlugins_1.length; _a++) {
+	        var plugin = newPlugins_1[_a];
 	        if (plugin.register) {
 	            plugin.register(container);
 	        }
 	    }
 	    // Resolve the new plugins.
 	    var promises = [];
-	    for (var _b = 0; _b < newPlugins.length; _b++) {
-	        var plugin = newPlugins[_b];
+	    for (var _b = 0, newPlugins_2 = newPlugins; _b < newPlugins_2.length; _b++) {
+	        var plugin = newPlugins_2[_b];
 	        if (plugin.resolve) {
 	            var result = plugin.resolve(container);
 	            if (result)
@@ -880,7 +880,8 @@
 	     */
 	    AppShell.requires = [];
 	    return AppShell;
-	})(phosphor_widget_1.Widget);
+	}(phosphor_widget_1.Widget));
+	exports.AppShell = AppShell;
 	/**
 	 * A class which manages a side bar and related stacked panel.
 	 */
@@ -985,7 +986,7 @@
 	        this._refreshVisibility();
 	    };
 	    return SideBarHandler;
-	})();
+	}());
 
 
 /***/ },
@@ -11888,7 +11889,7 @@
 	        this.update();
 	    };
 	    return SideBar;
-	})(phosphor_widget_1.Widget);
+	}(phosphor_widget_1.Widget));
 	exports.SideBar = SideBar;
 	/**
 	 * The namespace for the `SideBar` class private data.
@@ -12081,6 +12082,11 @@
 	exports.register = register;
 	/**
 	 * A concrete implementation of ICommandRegistry.
+	 *
+	 * #### Notes
+	 * This is only being exported for use in unit-tests, or
+	 * for subclassing in separate applications. In normal use
+	 * this should not be accessed directly.
 	 */
 	var CommandRegistry = (function () {
 	    /**
@@ -12149,13 +12155,13 @@
 	        // Setup the array for the new unique ids.
 	        var added = [];
 	        // Add the new commands to the map and warn for duplicates.
-	        for (var _i = 0; _i < items.length; _i++) {
-	            var _a = items[_i], id = _a.id, command = _a.command;
+	        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+	            var _a = items_1[_i], id = _a.id, handler = _a.handler;
 	            if (id in this._map) {
 	                console.warn("Command '" + id + "' is already registered.");
 	            }
 	            else {
-	                this._map[id] = command;
+	                this._map[id] = handler;
 	                added.push(id);
 	            }
 	        }
@@ -12167,8 +12173,8 @@
 	        this.commandsAdded.emit(added.slice());
 	        // Return a delegate which will remove the added commands.
 	        return new phosphor_disposable_1.DisposableDelegate(function () {
-	            for (var _i = 0; _i < added.length; _i++) {
-	                var id = added[_i];
+	            for (var _i = 0, added_1 = added; _i < added_1.length; _i++) {
+	                var id = added_1[_i];
 	                delete _this._map[id];
 	            }
 	            _this.commandsRemoved.emit(added.slice());
@@ -12179,7 +12185,8 @@
 	     */
 	    CommandRegistry.requires = [];
 	    return CommandRegistry;
-	})();
+	}());
+	exports.CommandRegistry = CommandRegistry;
 	/**
 	 * The namespace for the `CommandRegistry` class private data.
 	 */
@@ -12209,7 +12216,8 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphor_di_1 = __webpack_require__(5);
-	var palette_1 = __webpack_require__(58);
+	var phosphor_commandpalette_1 = __webpack_require__(58);
+	var phosphor_disposable_1 = __webpack_require__(15);
 	var index_1 = __webpack_require__(7);
 	var index_2 = __webpack_require__(6);
 	var index_3 = __webpack_require__(8);
@@ -12225,16 +12233,216 @@
 	    container.register(index_1.ICommandPalette, {
 	        lifetime: phosphor_di_1.Lifetime.Singleton,
 	        requires: [index_2.ICommandRegistry, index_3.IShortcutManager],
-	        create: function (commandRegistry, shortcuts) {
-	            return new palette_1.CommandPalette(commandRegistry, shortcuts);
+	        create: function (commandRegistry, shortcutManager) {
+	            return new CommandPaletteManager(commandRegistry, shortcutManager);
 	        }
 	    });
 	}
 	exports.register = register;
+	var CommandPaletteManager = (function () {
+	    /**
+	     * Create a new `CommandPaletteManager`
+	     *
+	     * @param commandRegistry - An instance of a command registry.
+	     *
+	     * @param shortcutManager - An instance of a shortcut manager.
+	     */
+	    function CommandPaletteManager(commandRegistry, shortcutManager) {
+	        this._paletteModel = new phosphor_commandpalette_1.StandardPaletteModel();
+	        this._commandPalette = new phosphor_commandpalette_1.CommandPalette();
+	        this._commandPalette.model = this._paletteModel;
+	        this._commandRegistry = commandRegistry;
+	        this._shortcutManager = shortcutManager;
+	    }
+	    Object.defineProperty(CommandPaletteManager.prototype, "widget", {
+	        /**
+	         * The underlying palette widget.
+	         */
+	        get: function () {
+	            return this._commandPalette;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /**
+	     * Add new command items to the palette.
+	     *
+	     * @param commands - An array of command IDs and arguments
+	     *
+	     * @returns An `IDisposable` to remove the added commands from the palette
+	     */
+	    CommandPaletteManager.prototype.add = function (items) {
+	        var _this = this;
+	        var modelItems = items.map(function (item) {
+	            var handler = _this._commandRegistry.get(item.id);
+	            if (!handler)
+	                return null;
+	            var options = {
+	                handler: handler,
+	                args: item.args,
+	                text: item.text,
+	                shortcut: "",
+	                category: item.category,
+	                caption: item.caption };
+	            var shortcut = _this._shortcutManager.getSequences(item.id, item.args);
+	            if (shortcut && shortcut.length > 0) {
+	                options.shortcut = shortcut[0]
+	                    .map(function (s) { return s.replace(/\s/g, '-'); }).join(' ');
+	            }
+	            return options;
+	        }).filter(function (item) { return !!item; });
+	        if (!modelItems.length)
+	            return;
+	        var paletteItems = this._paletteModel.addItems(modelItems);
+	        return new phosphor_disposable_1.DisposableDelegate(function () {
+	            _this._paletteModel.removeItems(paletteItems);
+	        });
+	    };
+	    return CommandPaletteManager;
+	}());
 
 
 /***/ },
 /* 58 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
+	function __export(m) {
+	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+	}
+	__export(__webpack_require__(59));
+	__export(__webpack_require__(60));
+	__export(__webpack_require__(61));
+	__export(__webpack_require__(62));
+	__webpack_require__(63);
+
+
+/***/ },
+/* 59 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
+	var phosphor_signaling_1 = __webpack_require__(28);
+	/**
+	 * An enum of the support search result types.
+	 */
+	(function (SearchResultType) {
+	    /**
+	     * The search result represents a section header.
+	     */
+	    SearchResultType[SearchResultType["Header"] = 0] = "Header";
+	    /**
+	     * The search result represents a command.
+	     */
+	    SearchResultType[SearchResultType["Command"] = 1] = "Command";
+	})(exports.SearchResultType || (exports.SearchResultType = {}));
+	var SearchResultType = exports.SearchResultType;
+	/**
+	 * An abstract base class for creating command palette models.
+	 */
+	var AbstractPaletteModel = (function () {
+	    function AbstractPaletteModel() {
+	    }
+	    Object.defineProperty(AbstractPaletteModel.prototype, "changed", {
+	        /**
+	         * A signal emitted when the potential search results change.
+	         *
+	         * #### Notes
+	         * A subclass should emit this signal when its contents change in
+	         * a way which may invalidate previously computed search results.
+	         */
+	        get: function () {
+	            return AbstractPaletteModelPrivate.changedSignal.bind(this);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    return AbstractPaletteModel;
+	})();
+	exports.AbstractPaletteModel = AbstractPaletteModel;
+	/**
+	 * The namespace for the `AbstractPaletteModel` class statics.
+	 */
+	var AbstractPaletteModel;
+	(function (AbstractPaletteModel) {
+	    /**
+	     * Split a query string into its category and text components.
+	     *
+	     * @param query - A query string of the form `(<category>:)?<text>`.
+	     *
+	     * @returns The `category` and `text` components of the query with
+	     *   leading and trailing whitespace removed.
+	     */
+	    function splitQuery(query) {
+	        var text;
+	        var category;
+	        var i = query.indexOf(':');
+	        if (i === -1) {
+	            category = '';
+	            text = query.trim();
+	        }
+	        else {
+	            category = query.slice(0, i).trim();
+	            text = query.slice(i + 1).trim();
+	        }
+	        return { category: category, text: text };
+	    }
+	    AbstractPaletteModel.splitQuery = splitQuery;
+	    /**
+	     * Join category and text components into a query string.
+	     *
+	     * @param category - The category for the query or `''`.
+	     *
+	     * @param text - The text for the query or `''`.
+	     *
+	     * @returns The joined query string for the components.
+	     */
+	    function joinQuery(category, text) {
+	        var query;
+	        if (category && text) {
+	            query = category.trim() + ": " + text.trim();
+	        }
+	        else if (category) {
+	            query = category.trim() + ": ";
+	        }
+	        else if (text) {
+	            query = text.trim();
+	        }
+	        else {
+	            query = '';
+	        }
+	        return query;
+	    }
+	    AbstractPaletteModel.joinQuery = joinQuery;
+	})(AbstractPaletteModel = exports.AbstractPaletteModel || (exports.AbstractPaletteModel = {}));
+	/**
+	 * The namespace for the `AbstractPaletteModel` private data.
+	 */
+	var AbstractPaletteModelPrivate;
+	(function (AbstractPaletteModelPrivate) {
+	    /**
+	     * A signal emitted when a palette model's search results change.
+	     */
+	    AbstractPaletteModelPrivate.changedSignal = new phosphor_signaling_1.Signal();
+	})(AbstractPaletteModelPrivate || (AbstractPaletteModelPrivate = {}));
+
+
+/***/ },
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -12250,68 +12458,72 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var arrays = __webpack_require__(10);
-	var phosphor_command_1 = __webpack_require__(59);
-	var phosphor_disposable_1 = __webpack_require__(15);
 	var phosphor_widget_1 = __webpack_require__(26);
-	var matcher_1 = __webpack_require__(61);
-	__webpack_require__(80);
+	var abstractmodel_1 = __webpack_require__(59);
 	/**
 	 * The class name added to `CommandPalette` instances.
 	 */
 	var PALETTE_CLASS = 'p-CommandPalette';
 	/**
-	 * The data attribute name for command palette item registrations.
+	 * The class name added to the search section of the palette.
 	 */
-	var REGISTRATION_ID = 'data-registration-id';
+	var SEARCH_CLASS = 'p-CommandPalette-search';
+	/**
+	 * The class name added to the input wrapper in the search section.
+	 */
+	var WRAPPER_CLASS = 'p-CommandPalette-inputWrapper';
+	/**
+	 * The class name added to the input node in the search section.
+	 */
+	var INPUT_CLASS = 'p-CommandPalette-input';
 	/**
 	 * The class name added to the content section of the palette.
 	 */
 	var CONTENT_CLASS = 'p-CommandPalette-content';
 	/**
-	 * The class name added to the search section of the palette.
-	 */
-	var SEARCH_CLASS = 'p-CommandPalette-search';
-	/**
-	 * The class name added to palette section headers.
+	 * The class name added to a palette section header.
 	 */
 	var HEADER_CLASS = 'p-CommandPalette-header';
 	/**
-	 * The class name added to the input wrapper in the search section.
+	 * The class name added to a palette section header text node.
 	 */
-	var INPUT_CLASS = 'p-CommandPalette-inputWrapper';
+	var HEADER_TEXT_CLASS = 'p-CommandPalette-headerText';
 	/**
-	 * The class name added to disabled palette items.
+	 * The class name added to a palette section header icon node.
 	 */
-	var DISABLED_CLASS = 'p-mod-disabled';
+	var HEADER_ICON_CLASS = 'p-CommandPalette-headerIcon';
 	/**
-	 * The class name added to the currently active palette item.
+	 * The class name added to a palette item.
+	 */
+	var ITEM_CLASS = 'p-CommandPalette-item';
+	/**
+	 * The class name added to item the wrapper around item text (excludes icon).
+	 */
+	var ITEM_CONTENT_CLASS = 'p-CommandPalette-itemContent';
+	/**
+	 * The class name added to item icons.
+	 */
+	var ITEM_ICON_CLASS = 'p-CommandPalette-itemIcon';
+	/**
+	 * The class name added to item titles.
+	 */
+	var ITEM_TEXT_CLASS = 'p-CommandPalette-itemText';
+	/**
+	 * The class name added to item shortcuts.
+	 */
+	var ITEM_SHORTCUT_CLASS = 'p-CommandPalette-itemShortcut';
+	/**
+	 * The class name added to item captions.
+	 */
+	var ITEM_CAPTION_CLASS = 'p-CommandPalette-itemCaption';
+	/**
+	 * The class name added to the active palette item.
 	 */
 	var ACTIVE_CLASS = 'p-mod-active';
 	/**
-	 * The class name added to each palette item.
+	 * The regex for parsing the query input string.
 	 */
-	var COMMAND_CLASS = 'p-CommandPalette-command';
-	/**
-	 * The class name added to the first line of a palette item.
-	 */
-	var COMMAND_TOP_CLASS = 'p-CommandPalette-commandTop';
-	/**
-	 * The class name added to the second line of a palette item.
-	 */
-	var COMMAND_BOTTOM_CLASS = 'p-CommandPalette-commandBottom';
-	/**
-	 * The class name added to an item caption.
-	 */
-	var CAPTION_CLASS = 'p-CommandPalette-caption';
-	/**
-	 * The class name added to an item shortcut.
-	 */
-	var SHORTCUT_CLASS = 'p-CommandPalette-shortcut';
-	/**
-	 * The class name added to an item title.
-	 */
-	var TITLE_CLASS = 'p-CommandPalette-title';
+	var QUERY_REGEX = /^(\w*:)?(.*)$/;
 	/**
 	 * The `keyCode` value for the enter key.
 	 */
@@ -12339,66 +12551,31 @@
 	    _a
 	);
 	/**
-	 * A singleton instance of the fuzzy matcher used for search results.
-	 */
-	var matcher = new matcher_1.FuzzyMatcher('title', 'caption');
-	/**
-	 * The seed value for registration IDs that are generated for palette items.
-	 */
-	var registrationSeed = 0;
-	/**
-	 * Test to see if a child node needs to be scrolled to within its parent node.
-	 *
-	 * @param parentNode - The element containing the child being checked.
-	 *
-	 * @param childNode - The child element whose visibility is being checked.
-	 *
-	 * @returns true if the parent node needs to be scrolled to reveal the child.
-	 */
-	function scrollTest(parentNode, childNode) {
-	    var parent = parentNode.getBoundingClientRect();
-	    var child = childNode.getBoundingClientRect();
-	    return child.top < parent.top || child.top + child.height > parent.bottom;
-	}
-	;
-	/**
-	 * A widget which displays registered commands and allows them to be executed.
+	 * A widget which displays commands from a command source.
 	 */
 	var CommandPalette = (function (_super) {
 	    __extends(CommandPalette, _super);
 	    /**
 	     * Construct a new command palette.
-	     *
-	     * @param commandRegistry - A command registry instance
 	     */
-	    function CommandPalette(commandRegistry, shortcutManager) {
+	    function CommandPalette() {
 	        _super.call(this);
-	        this._buffer = [];
-	        this._commandRegistry = null;
-	        this._registry = Object.create(null);
-	        this._searchResult = false;
-	        this._sections = [];
-	        this._shortcutManager = null;
+	        this._model = null;
 	        this.addClass(PALETTE_CLASS);
-	        this._commandRegistry = commandRegistry;
-	        commandRegistry.commandsRemoved.connect(this._onCommandsRemoved, this);
-	        this._shortcutManager = shortcutManager;
 	    }
 	    /**
 	     * Create the DOM node for a command palette.
-	     *
-	     * #### Notes
-	     * This method may be reimplemented to create a custom root node.
 	     */
 	    CommandPalette.createNode = function () {
 	        var node = document.createElement('div');
-	        var content = document.createElement('ul');
 	        var search = document.createElement('div');
-	        var input = document.createElement('input');
 	        var wrapper = document.createElement('div');
-	        content.className = CONTENT_CLASS;
+	        var input = document.createElement('input');
+	        var content = document.createElement('ul');
 	        search.className = SEARCH_CLASS;
-	        wrapper.className = INPUT_CLASS;
+	        wrapper.className = WRAPPER_CLASS;
+	        input.className = INPUT_CLASS;
+	        content.className = CONTENT_CLASS;
 	        wrapper.appendChild(input);
 	        search.appendChild(wrapper);
 	        node.appendChild(search);
@@ -12406,90 +12583,102 @@
 	        return node;
 	    };
 	    /**
-	     * Create a new header node for a command palette section.
+	     * Create a header node for a command palette.
 	     *
-	     * @param title - The palette section title
+	     * @param data - The palette header item data to render.
 	     *
-	     * @returns A new DOM node to use as a header in a command palette section.
+	     * @returns A new DOM node for a palette section header.
 	     *
 	     * #### Notes
 	     * This method may be reimplemented to create custom headers.
 	     */
-	    CommandPalette.createHeaderNode = function (title) {
+	    CommandPalette.createHeaderNode = function (data) {
 	        var node = document.createElement('li');
-	        var span = document.createElement('span');
-	        var hr = document.createElement('hr');
+	        var text = document.createElement('span');
+	        var icon = document.createElement('span');
 	        node.className = HEADER_CLASS;
-	        span.textContent = title;
-	        node.appendChild(span);
-	        node.appendChild(hr);
+	        text.className = HEADER_TEXT_CLASS;
+	        icon.className = HEADER_ICON_CLASS;
+	        text.innerHTML = data.text;
+	        node.appendChild(text);
+	        node.appendChild(icon);
 	        return node;
 	    };
 	    /**
-	     * Create a new item node for a command palette.
+	     * Create an item node for a command palette.
 	     *
-	     * @param item - The content for the palette item.
+	     * @param data - The palette item data to render.
 	     *
-	     * @returns A new DOM node to use as an item in a command palette.
+	     * @returns A new DOM node for a palette section item.
 	     *
 	     * #### Notes
 	     * This method may be reimplemented to create custom items.
 	     */
-	    CommandPalette.createItemNode = function (item) {
+	    CommandPalette.createItemNode = function (data) {
 	        var node = document.createElement('li');
-	        var top = document.createElement('div');
-	        var bottom = document.createElement('div');
-	        var title = document.createElement('span');
-	        var shortcut = document.createElement('span');
+	        var content = document.createElement('div');
+	        var icon = document.createElement('span');
+	        var text = document.createElement('span');
 	        var caption = document.createElement('span');
-	        // Set the styles for each element.
-	        node.className = COMMAND_CLASS;
-	        if (item.disabled)
-	            node.classList.add(DISABLED_CLASS);
-	        top.className = COMMAND_TOP_CLASS;
-	        bottom.className = COMMAND_BOTTOM_CLASS;
-	        title.className = TITLE_CLASS;
-	        shortcut.className = SHORTCUT_CLASS;
-	        caption.className = CAPTION_CLASS;
-	        // Populate the content and attributes for each element.
-	        node.setAttribute(REGISTRATION_ID, item.id);
-	        title.textContent = item.title;
-	        title.setAttribute('title', item.title);
-	        if (item.shortcut)
-	            shortcut.textContent = item.shortcut;
-	        if (item.caption) {
-	            caption.textContent = item.caption;
-	            caption.setAttribute('title', item.caption);
-	        }
-	        // Compose the node.
-	        top.appendChild(title);
-	        top.appendChild(shortcut);
-	        bottom.appendChild(caption);
-	        node.appendChild(top);
-	        node.appendChild(bottom);
+	        var shortcut = document.createElement('span');
+	        content.className = ITEM_CONTENT_CLASS;
+	        text.className = ITEM_TEXT_CLASS;
+	        caption.className = ITEM_CAPTION_CLASS;
+	        shortcut.className = ITEM_SHORTCUT_CLASS;
+	        var itemClass = ITEM_CLASS;
+	        var extraItem = data.className;
+	        if (extraItem)
+	            itemClass += ' ' + extraItem;
+	        node.className = itemClass;
+	        var iconClass = ITEM_ICON_CLASS;
+	        var extraIcon = data.icon;
+	        if (extraIcon)
+	            iconClass += ' ' + extraIcon;
+	        icon.className = iconClass;
+	        text.innerHTML = data.text;
+	        caption.innerHTML = data.caption;
+	        shortcut.innerHTML = data.shortcut;
+	        content.appendChild(shortcut);
+	        content.appendChild(text);
+	        content.appendChild(caption);
+	        node.appendChild(icon);
+	        node.appendChild(content);
 	        return node;
 	    };
 	    /**
-	     * Create a new section document fragment for a command palette.
-	     *
-	     * @param title - The section heading.
-	     *
-	     * @param items - The command items in a section.
-	     *
-	     * @returns A `DocumentFragment` with the whole rendered section.
-	     *
-	     * #### Notes
-	     * This method may be reimplemented to create custom sections.
+	     * Dispose of the resources held by the command palette.
 	     */
-	    CommandPalette.createSectionFragment = function (title, items) {
-	        var _this = this;
-	        var fragment = document.createDocumentFragment();
-	        fragment.appendChild(this.createHeaderNode(title));
-	        items.forEach(function (item) {
-	            fragment.appendChild(_this.createItemNode(item));
-	        });
-	        return fragment;
+	    CommandPalette.prototype.dispose = function () {
+	        this._model = null;
+	        _super.prototype.dispose.call(this);
 	    };
+	    Object.defineProperty(CommandPalette.prototype, "model", {
+	        /**
+	         * Get the model for the command palette.
+	         */
+	        get: function () {
+	            return this._model;
+	        },
+	        /**
+	         * Set the model for the command palette.
+	         */
+	        set: function (value) {
+	            value = value || null;
+	            if (this._model === value) {
+	                return;
+	            }
+	            if (this._model) {
+	                this._model.changed.disconnect(this._onModelChanged);
+	            }
+	            if (value) {
+	                value.changed.connect(this._onModelChanged);
+	            }
+	            this._model = value;
+	            this.update();
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
 	    Object.defineProperty(CommandPalette.prototype, "contentNode", {
 	        /**
 	         * Get the command palette content node.
@@ -12523,66 +12712,6 @@
 	        configurable: true
 	    });
 	    /**
-	     * Dispose of the resources held by the command palette.
-	     */
-	    CommandPalette.prototype.dispose = function () {
-	        var commandRegistry = this._commandRegistry;
-	        commandRegistry.commandsRemoved.disconnect(this._onCommandsRemoved, this);
-	        this._sections.length = 0;
-	        this._buffer.length = 0;
-	        this._registry = null;
-	        _super.prototype.dispose.call(this);
-	    };
-	    /**
-	     * Add new command items to the palette.
-	     *
-	     * @param commands - An array of command IDs and arguments
-	     *
-	     * @returns An `IDisposable` to remove the added commands from the palette
-	     */
-	    CommandPalette.prototype.add = function (commands) {
-	        var _this = this;
-	        var registrations = [];
-	        commands.forEach(function (spec) {
-	            var command = _this._commandRegistry.get(spec.id);
-	            if (!command) {
-	                console.warn("Command " + spec.id + " does not exist in command registry.");
-	                return;
-	            }
-	            var item = {
-	                args: spec.args,
-	                caption: command.caption(spec.args),
-	                category: command.category(spec.args),
-	                command: spec.id,
-	                disabled: !command.isEnabled(spec.args),
-	                id: "palette-" + ++registrationSeed,
-	                shortcut: _this._shortcutForItem(spec.id, spec.args),
-	                title: command.text(spec.args) || spec.id
-	            };
-	            // Add the item to the private registry.
-	            _this._registry[item.id] = item;
-	            // Add the item to the list of registrations to dispose later.
-	            registrations.push(item.id);
-	            // Discover whether a section with this category already exists.
-	            var sectionIndex = arrays.findIndex(_this._sections, function (section) {
-	                return section.title === item.category;
-	            });
-	            if (sectionIndex === -1) {
-	                // If a section with this header does not exist, add a new section.
-	                _this._sections.push({ title: item.category, registrations: [item.id] });
-	            }
-	            else {
-	                // If a section exists with this header, add to it.
-	                _this._sections[sectionIndex].registrations.push(item.id);
-	            }
-	        });
-	        this._bufferAllItems();
-	        return new phosphor_disposable_1.DisposableDelegate(function () {
-	            registrations.forEach(function (id) { _this._removeItem(id, true); });
-	            _this._bufferAllItems();
-	        });
-	    };
-	    /**
 	     * Handle the DOM events for the command palette.
 	     *
 	     * @param event - The DOM event sent to the command palette.
@@ -12600,33 +12729,13 @@
 	            case 'keydown':
 	                this._evtKeyDown(event);
 	                break;
-	            case 'mousemove':
-	                this._evtMouseMove(event);
+	            case 'input':
+	                this._evtInput(event);
 	                break;
-	            case 'mouseleave':
-	                this._evtMouseLeave(event);
+	            case 'blur':
+	                this._deactivate();
 	                break;
 	        }
-	    };
-	    /**
-	     * Search for a specific query string among command titles and captions.
-	     *
-	     * @param query - The query string
-	     */
-	    CommandPalette.prototype.search = function (query) {
-	        var _this = this;
-	        var searchableItems = this._sections.reduce(function (acc, section) {
-	            section.registrations.forEach(function (id) {
-	                var item = _this._registry[id];
-	                var title = item.title;
-	                var caption = item.caption;
-	                acc.push({ id: id, title: title, caption: caption });
-	            });
-	            return acc;
-	        }, []);
-	        matcher.search(query, searchableItems).then(function (results) {
-	            _this._bufferSearchResults(results);
-	        });
 	    };
 	    /**
 	     * A message handler invoked on a `'after-attach'` message.
@@ -12634,8 +12743,8 @@
 	    CommandPalette.prototype.onAfterAttach = function (msg) {
 	        this.node.addEventListener('click', this);
 	        this.node.addEventListener('keydown', this);
-	        this.node.addEventListener('mousemove', this);
-	        this.contentNode.addEventListener('mouseleave', this);
+	        this.node.addEventListener('input', this);
+	        this.inputNode.addEventListener('blur', this);
 	    };
 	    /**
 	     * A message handler invoked on a `'before-detach'` message.
@@ -12643,41 +12752,57 @@
 	    CommandPalette.prototype.onBeforeDetach = function (msg) {
 	        this.node.removeEventListener('click', this);
 	        this.node.removeEventListener('keydown', this);
-	        this.node.removeEventListener('mousemove', this);
-	        this.contentNode.removeEventListener('mouseleave', this);
+	        this.node.removeEventListener('input', this);
+	        this.inputNode.removeEventListener('blur', this);
 	    };
 	    /**
-	     * A handler invoked on an `'after-show'` message.
-	     */
-	    CommandPalette.prototype.onAfterShow = function (msg) {
-	        this.inputNode.focus();
-	    };
-	    /**
-	     * A handler invoked on an `'update-request'` message.
+	     *
 	     */
 	    CommandPalette.prototype.onUpdateRequest = function (msg) {
-	        var _this = this;
-	        // Clear the node.
-	        this.contentNode.textContent = '';
-	        // Ask the command registry about each palette commmand.
-	        Object.keys(this._registry).forEach(function (id) {
-	            var item = _this._registry[id];
-	            var command = _this._commandRegistry.get(item.command);
-	            // If a command doesn't exist any more, it needs to be removed.
-	            if (!command) {
-	                _this._removeItem(id, true);
+	        // Empty the content node.
+	        var content = this.contentNode;
+	        content.textContent = '';
+	        // Bail if there is no model.
+	        if (!this._model) {
+	            return;
+	        }
+	        // Keep a local buffer containing search results.
+	        var query = this.inputNode.value;
+	        var result = this._model.search(query);
+	        this._buffer = result;
+	        if (result.length === 0) {
+	            return;
+	        }
+	        // Create a document fragment that will populate the content node.
+	        var fragment = document.createDocumentFragment();
+	        var ctor = this.constructor;
+	        for (var i = 0, n = result.length; i < n; ++i) {
+	            var node = void 0;
+	            var _a = result[i], type = _a.type, value = _a.value;
+	            switch (type) {
+	                case abstractmodel_1.SearchResultType.Header:
+	                    var header = value;
+	                    node = ctor.createHeaderNode(header);
+	                    if (header.category)
+	                        node.dataset['index'] = "" + i;
+	                    break;
+	                case abstractmodel_1.SearchResultType.Command:
+	                    node = ctor.createItemNode(value);
+	                    node.dataset['index'] = "" + i;
+	                    break;
+	                default:
+	                    throw new Error('invalid search result type');
 	            }
-	            else {
-	                _this._updateCommandItem(id, command);
-	            }
-	        });
-	        // Render the buffer.
-	        this._buffer.forEach(function (section) { return _this._renderSection(section); });
-	        // Activate the first result if search result.
-	        if (this._searchResult) {
-	            // Reset the flag.
-	            this._searchResult = false;
-	            this._activateFirst();
+	            fragment.appendChild(node);
+	        }
+	        content.appendChild(fragment);
+	        // If the results were from a search, highlight the first item.
+	        if (query.length) {
+	            var selector = "." + ITEM_CLASS;
+	            var target = this.contentNode.querySelector(selector);
+	            // Scroll all the way to the top of the content node.
+	            this.contentNode.scrollTop = 0;
+	            this._activateNode(target);
 	        }
 	    };
 	    /**
@@ -12686,75 +12811,60 @@
 	     * @param direction - The scroll direction.
 	     */
 	    CommandPalette.prototype._activate = function (direction) {
-	        var active = this._findActive();
+	        var active = this._findActiveNode();
 	        if (!active) {
-	            if (direction === 1 /* Down */)
+	            if (direction === 1 /* Down */) {
 	                return this._activateFirst();
-	            if (direction === 0 /* Up */)
+	            }
+	            if (direction === 0 /* Up */) {
 	                return this._activateLast();
+	            }
 	        }
-	        var registrations = this._buffer.map(function (section) { return section.registrations; })
-	            .reduce(function (acc, ids) { return acc.concat(ids); }, []);
-	        var current = registrations.indexOf(active.getAttribute(REGISTRATION_ID));
+	        var nodes = this.contentNode.querySelectorAll('[data-index]');
+	        var current = Array.prototype.indexOf.call(nodes, active);
 	        var newActive;
 	        if (direction === 0 /* Up */) {
-	            newActive = current > 0 ? current - 1 : registrations.length - 1;
+	            newActive = current > 0 ? current - 1 : nodes.length - 1;
 	        }
 	        else {
-	            newActive = current < registrations.length - 1 ? current + 1 : 0;
+	            newActive = current < nodes.length - 1 ? current + 1 : 0;
 	        }
-	        while (newActive !== current) {
-	            if (!this._registry[registrations[newActive]].disabled)
-	                break;
-	            if (direction === 0 /* Up */) {
-	                newActive = newActive > 0 ? newActive - 1 : registrations.length - 1;
-	            }
-	            else {
-	                newActive = newActive < registrations.length - 1 ? newActive + 1 : 0;
-	            }
-	        }
-	        if (newActive === 0)
+	        if (newActive === 0) {
 	            return this._activateFirst();
-	        var selector = "[" + REGISTRATION_ID + "=\"" + registrations[newActive] + "\"]";
-	        var target = this.node.querySelector(selector);
+	        }
+	        var target = nodes[newActive];
 	        var scrollIntoView = scrollTest(this.contentNode, target);
 	        var alignToTop = direction === 0 /* Up */;
 	        this._activateNode(target, scrollIntoView, alignToTop);
 	    };
 	    /**
-	     * Activate the first command.
+	     * Activate the first item.
 	     */
 	    CommandPalette.prototype._activateFirst = function () {
-	        // Query the DOM for items that are not disabled.
-	        var selector = "." + COMMAND_CLASS + ":not(." + DISABLED_CLASS + ")";
-	        var nodes = this.node.querySelectorAll(selector);
-	        // If the palette contains any enabled items, activate the first one.
+	        var nodes = this.contentNode.querySelectorAll('[data-index]');
+	        // If the palette contains any items, activate the first one.
 	        if (nodes.length) {
 	            // Scroll all the way to the top of the content node.
 	            this.contentNode.scrollTop = 0;
 	            var target = nodes[0];
-	            // Test if the first enabled item is visible.
+	            // Test if the first item is visible.
 	            var scrollIntoView = scrollTest(this.contentNode, target);
-	            var alignToTop = true;
-	            this._activateNode(target, scrollIntoView, alignToTop);
+	            this._activateNode(target, scrollIntoView, true);
 	        }
 	    };
 	    /**
 	     * Activate the last command.
 	     */
 	    CommandPalette.prototype._activateLast = function () {
-	        // Query the DOM for items that are not disabled.
-	        var selector = "." + COMMAND_CLASS + ":not(." + DISABLED_CLASS + ")";
-	        var nodes = this.node.querySelectorAll(selector);
-	        // If the palette contains any enabled items, activate the last one.
+	        var nodes = this.contentNode.querySelectorAll('[data-index]');
+	        // If the palette contains any items, activate the last one.
 	        if (nodes.length) {
 	            // Scroll all the way to the bottom of the content node.
 	            this.contentNode.scrollTop = this.contentNode.scrollHeight;
 	            var target = nodes[nodes.length - 1];
-	            // Test if the last enabled item is visible.
+	            // Test if the last item is visible.
 	            var scrollIntoView = scrollTest(this.contentNode, target);
-	            var alignToTop = false;
-	            this._activateNode(target, scrollIntoView, alignToTop);
+	            this._activateNode(target, scrollIntoView, false);
 	        }
 	    };
 	    /**
@@ -12767,9 +12877,10 @@
 	     * @param alignToTop - A flag indicating whether to align scroll to top.
 	     */
 	    CommandPalette.prototype._activateNode = function (target, scrollIntoView, alignToTop) {
-	        var active = this._findActive();
-	        if (target === active)
+	        var active = this._findActiveNode();
+	        if (target === active) {
 	            return;
+	        }
 	        if (active)
 	            this._deactivate();
 	        target.classList.add(ACTIVE_CLASS);
@@ -12777,53 +12888,11 @@
 	            target.scrollIntoView(alignToTop);
 	    };
 	    /**
-	     * Set the buffer to all registered items.
-	     */
-	    CommandPalette.prototype._bufferAllItems = function () {
-	        // Filter out any sections that are empty.
-	        this._sections = this._sections.filter(function (s) { return !!s.registrations.length; });
-	        this._sort();
-	        this._buffer = this._sections;
-	        this.update();
-	    };
-	    /**
-	     * Set the buffer to search results.
-	     *
-	     * @param items - The search results to be buffered.
-	     */
-	    CommandPalette.prototype._bufferSearchResults = function (items) {
-	        var headings = this._sections.reduce(function (acc, section) {
-	            section.registrations.forEach(function (id) { return acc[id] = section.title; });
-	            return acc;
-	        }, Object.create(null));
-	        var sections = items.reduce(function (acc, val, idx) {
-	            var heading = headings[val.id];
-	            if (!idx) {
-	                acc.push({ title: heading, registrations: [val.id] });
-	                return acc;
-	            }
-	            if (acc[acc.length - 1].title === heading) {
-	                // Add to the last group.
-	                acc[acc.length - 1].registrations.push(val.id);
-	            }
-	            else {
-	                // Create a new group.
-	                acc.push({ title: heading, registrations: [val.id] });
-	            }
-	            return acc;
-	        }, []);
-	        // If there are search results, set the search flag used for activation.
-	        if (sections.length)
-	            this._searchResult = true;
-	        this._buffer = sections;
-	        this.update();
-	    };
-	    /**
-	     * Deactivate (i.e. deselect) all palette item.
+	     * Deactivate (i.e. deselect) all palette items.
 	     */
 	    CommandPalette.prototype._deactivate = function () {
-	        var selector = "." + COMMAND_CLASS + "." + ACTIVE_CLASS;
-	        var nodes = this.node.querySelectorAll(selector);
+	        var selector = "." + ACTIVE_CLASS;
+	        var nodes = this.contentNode.querySelectorAll(selector);
 	        for (var i = 0; i < nodes.length; ++i) {
 	            nodes[i].classList.remove(ACTIVE_CLASS);
 	        }
@@ -12833,1221 +12902,137 @@
 	     */
 	    CommandPalette.prototype._evtClick = function (event) {
 	        var altKey = event.altKey, ctrlKey = event.ctrlKey, metaKey = event.metaKey, shiftKey = event.shiftKey;
-	        if (event.button !== 0 || altKey || ctrlKey || metaKey || shiftKey)
+	        if (event.button !== 0 || altKey || ctrlKey || metaKey || shiftKey) {
 	            return;
+	        }
 	        event.stopPropagation();
 	        event.preventDefault();
 	        var target = event.target;
-	        while (!target.hasAttribute(REGISTRATION_ID)) {
-	            if (target === this.node)
+	        while (!target.hasAttribute('data-index')) {
+	            if (target === this.node) {
 	                return;
+	            }
 	            target = target.parentElement;
 	        }
-	        var item = this._registry[target.getAttribute(REGISTRATION_ID)];
-	        if (item.disabled)
-	            return;
-	        phosphor_command_1.safeExecute(this._commandRegistry.get(item.command), item.args);
+	        this._execute(target);
 	    };
 	    /**
 	     * Handle the `'keydown'` event for the command palette.
 	     */
 	    CommandPalette.prototype._evtKeyDown = function (event) {
-	        var _this = this;
 	        var altKey = event.altKey, ctrlKey = event.ctrlKey, metaKey = event.metaKey, keyCode = event.keyCode;
-	        if (!FN_KEYS.hasOwnProperty("" + keyCode)) {
-	            var input = this.inputNode;
-	            var oldValue = input.value;
-	            requestAnimationFrame(function () {
-	                var newValue = input.value;
-	                if (newValue === '')
-	                    return _this._bufferAllItems();
-	                if (newValue !== oldValue)
-	                    return _this.search(newValue);
-	            });
+	        // Ignore system keyboard shortcuts.
+	        if (altKey || ctrlKey || metaKey) {
 	            return;
 	        }
-	        // Ignore system keyboard shortcuts.
-	        if (altKey || ctrlKey || metaKey)
+	        // Allow all normal (non-navigation) keystrokes to propagate.
+	        if (!FN_KEYS.hasOwnProperty("" + keyCode)) {
 	            return;
-	        // If escape key is pressed and nothing is active, allow propagation.
+	        }
 	        if (keyCode === ESCAPE) {
-	            if (!this._findActive())
+	            var inputValue = this.inputNode.value;
+	            var _a = abstractmodel_1.AbstractPaletteModel.splitQuery(inputValue), category = _a.category, text = _a.text;
+	            // If escape key is pressed and category exists, stop propagation.
+	            if (category) {
+	                event.preventDefault();
+	                event.stopPropagation();
+	                // Remove the category and leave the search query intact.
+	                this.inputNode.value = text;
+	                this.inputNode.focus();
+	                this.update();
 	                return;
-	            event.preventDefault();
-	            event.stopPropagation();
-	            return this._deactivate();
+	            }
+	            // If escape key is pressed and text exists, stop propagation.
+	            if (text) {
+	                event.preventDefault();
+	                event.stopPropagation();
+	                // Remove the search query, resetting the palette.
+	                this.inputNode.value = '';
+	                this.inputNode.focus();
+	                this.update();
+	                return;
+	            }
+	            // If escape key is pressed and results in no search action, propagate.
+	            this._deactivate();
+	            this.inputNode.blur();
+	            return;
 	        }
 	        event.preventDefault();
 	        event.stopPropagation();
-	        if (keyCode === UP_ARROW)
+	        if (keyCode === UP_ARROW) {
 	            return this._activate(0 /* Up */);
-	        if (keyCode === DOWN_ARROW)
+	        }
+	        if (keyCode === DOWN_ARROW) {
 	            return this._activate(1 /* Down */);
+	        }
 	        if (keyCode === ENTER) {
-	            var active = this._findActive();
-	            if (!active)
+	            var active = this._findActiveNode();
+	            if (!active) {
 	                return;
-	            var item = this._registry[active.getAttribute(REGISTRATION_ID)];
-	            phosphor_command_1.safeExecute(this._commandRegistry.get(item.command), item.args);
-	            this._deactivate();
-	            return;
-	        }
-	    };
-	    /**
-	     * Handle the `'mouseleave'` event for the command palette.
-	     */
-	    CommandPalette.prototype._evtMouseLeave = function (event) {
-	        this._deactivate();
-	    };
-	    /**
-	     * Handle the `'mousemove'` event for the command palette.
-	     */
-	    CommandPalette.prototype._evtMouseMove = function (event) {
-	        var target = event.target;
-	        while (!target.hasAttribute(REGISTRATION_ID)) {
-	            if (target === this.node)
-	                return this._deactivate();
-	            target = target.parentElement;
-	        }
-	        var priv = this._registry[target.getAttribute(REGISTRATION_ID)];
-	        if (priv.disabled) {
-	            this._deactivate();
-	        }
-	        else {
-	            this._activateNode(target);
-	        }
-	    };
-	    /**
-	     * Find the currently selected command.
-	     */
-	    CommandPalette.prototype._findActive = function () {
-	        var selector = "." + COMMAND_CLASS + "." + ACTIVE_CLASS;
-	        return this.node.querySelector(selector);
-	    };
-	    /**
-	     * A handler for command registry removals.
-	     *
-	     * @param sender - The command registry instance that signaled a change.
-	     *
-	     * @param ids - The command IDs that were removed.
-	     */
-	    CommandPalette.prototype._onCommandsRemoved = function (sender, ids) {
-	        var _this = this;
-	        var commands = ids.reduce(function (acc, val) {
-	            acc[val] = null;
-	            return acc;
-	        }, Object.create(null));
-	        var staleRegistry = Object.keys(this._registry).some(function (id) {
-	            return _this._registry[id].command in commands;
-	        });
-	        if (staleRegistry)
-	            this.update();
-	    };
-	    /**
-	     * Remove a registered item from the registry and from the sections.
-	     *
-	     * @param id - The palette ID of the item being removed.
-	     *
-	     * @param deregister - A flag to delete the internal registration of the item.
-	     */
-	    CommandPalette.prototype._removeItem = function (id, deregister) {
-	        for (var _i = 0, _a = this._sections; _i < _a.length; _i++) {
-	            var section = _a[_i];
-	            for (var _b = 0, _c = section.registrations; _b < _c.length; _b++) {
-	                var registered = _c[_b];
-	                if (id === registered) {
-	                    arrays.remove(section.registrations, id);
-	                    if (deregister)
-	                        delete this._registry[id];
-	                    return;
-	                }
 	            }
-	        }
-	    };
-	    /**
-	     * Render a section and its commands.
-	     *
-	     * @param section - The palette section being rendered.
-	     */
-	    CommandPalette.prototype._renderSection = function (section) {
-	        var _this = this;
-	        var constructor = this.constructor;
-	        var items = section.registrations.map(function (id) { return _this._registry[id]; });
-	        var fragment = constructor.createSectionFragment(section.title, items);
-	        this.contentNode.appendChild(fragment);
-	    };
-	    /**
-	     * Get the shortcut for an item.
-	     *
-	     * @param command - The command id.
-	     *
-	     * @param args - The command arguments.
-	     */
-	    CommandPalette.prototype._shortcutForItem = function (command, args) {
-	        var shortcut = '';
-	        var sequences = this._shortcutManager.getSequences(command, args);
-	        if (sequences && sequences.length > 0) {
-	            shortcut = sequences[0].map(function (s) { return s.replace(/\s/g, '-'); }).join(' ');
-	        }
-	        return shortcut;
-	    };
-	    /**
-	     * Sort the sections by title and their commands by title.
-	     */
-	    CommandPalette.prototype._sort = function () {
-	        var _this = this;
-	        this._sections.sort(function (a, b) { return a.title.localeCompare(b.title); });
-	        this._sections.forEach(function (section) { return section.registrations.sort(function (a, b) {
-	            var titleA = _this._registry[a].title;
-	            var titleB = _this._registry[b].title;
-	            return titleA.localeCompare(titleB);
-	        }); });
-	    };
-	    /**
-	     * Update the local command item by referencing its underlying `Command`.
-	     *
-	     * @param id - The palette registration ID for the command item.
-	     *
-	     * @param command - The `Command` instance that the palette item references.
-	     */
-	    CommandPalette.prototype._updateCommandItem = function (id, command) {
-	        var item = this._registry[id];
-	        var newCategory = command.category(item.args);
-	        item.caption = command.caption(item.args);
-	        item.disabled = !command.isEnabled(item.args);
-	        item.shortcut = this._shortcutForItem(item.command, item.args);
-	        item.title = command.text(item.args) || item.command;
-	        // If the item does not need to be shifted into a different section, return.
-	        if (item.category === newCategory)
+	            this._execute(active);
+	            this._deactivate();
 	            return;
-	        // Delete the item from whichever section it currently resides in.
-	        this._removeItem(item.id, false);
-	        item.category = newCategory;
-	        // Discover whether a section with this category already exists.
-	        var sectionIndex = arrays.findIndex(this._sections, function (section) {
-	            return section.title === newCategory;
-	        });
-	        if (sectionIndex === -1) {
-	            // If a section with this header does not exist, add a new section.
-	            this._sections.push({ title: item.category, registrations: [item.id] });
 	        }
-	        else {
-	            // If a section exists with this header, add to it.
-	            this._sections[sectionIndex].registrations.push(item.id);
+	    };
+	    /**
+	     * Handle the `'input'` event for the command palette.
+	     */
+	    CommandPalette.prototype._evtInput = function (event) {
+	        this.update();
+	    };
+	    /**
+	     * Execute the command or category search associated with a palette node.
+	     */
+	    CommandPalette.prototype._execute = function (target) {
+	        var _a = this._buffer[parseInt(target.dataset['index'], 10)], type = _a.type, value = _a.value;
+	        switch (type) {
+	            case abstractmodel_1.SearchResultType.Header:
+	                var category = value.category;
+	                var text = abstractmodel_1.AbstractPaletteModel.splitQuery(this.inputNode.value).text;
+	                this.inputNode.value = category.trim() + ": " + text;
+	                this.inputNode.focus();
+	                this.update();
+	                break;
+	            case abstractmodel_1.SearchResultType.Command:
+	                var _b = value, handler = _b.handler, args = _b.args;
+	                handler(args);
+	                break;
+	            default:
+	                throw new Error('invalid search result type');
 	        }
+	    };
+	    /**
+	     * Find the currently selected item.
+	     */
+	    CommandPalette.prototype._findActiveNode = function () {
+	        var selector = "." + ACTIVE_CLASS;
+	        return this.contentNode.querySelector(selector);
+	    };
+	    /**
+	     *
+	     */
+	    CommandPalette.prototype._onModelChanged = function () {
 	    };
 	    return CommandPalette;
 	})(phosphor_widget_1.Widget);
 	exports.CommandPalette = CommandPalette;
+	/**
+	 * Test to see if a child node needs to be scrolled to within its parent node.
+	 *
+	 * @param parentNode - The element containing the child being checked.
+	 *
+	 * @param childNode - The child element whose visibility is being checked.
+	 *
+	 * @returns true if the parent node needs to be scrolled to reveal the child.
+	 */
+	function scrollTest(parentNode, childNode) {
+	    var parent = parentNode.getBoundingClientRect();
+	    var child = childNode.getBoundingClientRect();
+	    return child.top < parent.top || child.top + child.height > parent.bottom;
+	}
 	var _a;
 
-
-/***/ },
-/* 59 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
-	|
-	| Distributed under the terms of the BSD 3-Clause License.
-	|
-	| The full license is in the file LICENSE, distributed with this software.
-	|----------------------------------------------------------------------------*/
-	'use strict';
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var phosphor_signaling_1 = __webpack_require__(60);
-	/**
-	 * An abstract base class for implementing concrete commands.
-	 */
-	var Command = (function () {
-	    function Command() {
-	    }
-	    Object.defineProperty(Command.prototype, "changed", {
-	        /**
-	         * A signal emitted when the command's state changes.
-	         *
-	         * #### Notes
-	         * A subclass should emit this signal when the command state changes.
-	         */
-	        get: function () {
-	            return CommandPrivate.changedSignal.bind(this);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    /**
-	     * Get the display text for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The display text for the command.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * use this as the text for the primary DOM node for the command.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.text = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Get the class name(s) for the command icon.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The class name(s) to add to the command icon node.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * add the class name(s) to the DOM node for the command icon.
-	     *
-	     * Multiple class names can be separated with whitespace.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.icon = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Get the short caption for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The short caption for the command.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * This value is used by UI elements where displaying a short command
-	     * description is relevant, such as tooltips and command palettes.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.caption = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Get the category for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The category for the command.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * This value is used by UI elements which group commands together
-	     * based on category, such as toolbars and command palettes.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.category = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Get the class name(s) for the primary command node.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The class name(s) to add to the primary command node.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * add the class name(s) to the primary DOM node for the command.
-	     *
-	     * Multiple class names can be separated with whitespace.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.className = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Test whether the command is enabled for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is enabled, `false` otherwise.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * typically display a non-enabled command as greyed-out.
-	     *
-	     * The default implementation of this method returns `true`.
-	     */
-	    Command.prototype.isEnabled = function (args) {
-	        return true;
-	    };
-	    /**
-	     * Test whether the command is visible for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is visible, `false` otherwise.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * typically not display a non-visible command.
-	     *
-	     * The default implementation of this method returns `true`.
-	     */
-	    Command.prototype.isVisible = function (args) {
-	        return true;
-	    };
-	    /**
-	     * Test whether the command is checked for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is checked, `false` otherwise.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * typically add extra class names to the node of a checked command.
-	     *
-	     * The default implementation of this method returns `false`.
-	     */
-	    Command.prototype.isChecked = function (args) {
-	        return false;
-	    };
-	    return Command;
-	})();
-	exports.Command = Command;
-	/**
-	 * Safely execute a command.
-	 *
-	 * @param command - The command to execute.
-	 *
-	 * @param args - The arguments for the command. If the command does
-	 *   not require arguments, this may be `null`.
-	 *
-	 * #### Notes
-	 * If the commmand throws an exception, it will be caught and logged.
-	 */
-	function safeExecute(command, args) {
-	    try {
-	        command.execute(args);
-	    }
-	    catch (err) {
-	        console.error(err);
-	    }
-	}
-	exports.safeExecute = safeExecute;
-	/**
-	 * A concrete implementation of [[Command]].
-	 *
-	 * A `SimpleCommand` is useful for creating commands which do not rely
-	 * on complex state and which can be implemented by a single function.
-	 *
-	 * A `SimpleCommand` should not be used when fine grained control over
-	 * the command state is required. For those cases, the `Command` class
-	 * should be subclassed directly.
-	 */
-	var SimpleCommand = (function (_super) {
-	    __extends(SimpleCommand, _super);
-	    /**
-	     * Construct a new simple command.
-	     *
-	     * @param options - The options for initializing the command.
-	     */
-	    function SimpleCommand(options) {
-	        _super.call(this);
-	        this._text = '';
-	        this._icon = '';
-	        this._caption = '';
-	        this._category = '';
-	        this._className = '';
-	        this._enabled = true;
-	        this._visible = true;
-	        this._checked = false;
-	        this._handler = options.handler;
-	        if (options.text !== void 0) {
-	            this._text = options.text;
-	        }
-	        if (options.icon !== void 0) {
-	            this._icon = options.icon;
-	        }
-	        if (options.caption !== void 0) {
-	            this._caption = options.caption;
-	        }
-	        if (options.category !== void 0) {
-	            this._category = options.category;
-	        }
-	        if (options.className !== void 0) {
-	            this._className = options.className;
-	        }
-	        if (options.enabled !== void 0) {
-	            this._enabled = options.enabled;
-	        }
-	        if (options.visible !== void 0) {
-	            this._visible = options.visible;
-	        }
-	        if (options.checked !== void 0) {
-	            this._checked = options.checked;
-	        }
-	    }
-	    /**
-	     * Get the display text for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The display text for the command.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setText]]
-	     */
-	    SimpleCommand.prototype.text = function (args) {
-	        return this._text;
-	    };
-	    /**
-	     * Get the class name(s) for the command icon.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The class name(s) to add to the command icon node.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setIcon]]
-	     */
-	    SimpleCommand.prototype.icon = function (args) {
-	        return this._icon;
-	    };
-	    /**
-	     * Get the short caption for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The short caption for the command.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setCaption]]
-	     */
-	    SimpleCommand.prototype.caption = function (args) {
-	        return this._caption;
-	    };
-	    /**
-	     * Get the category for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The category for the command.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setCategory]]
-	     */
-	    SimpleCommand.prototype.category = function (args) {
-	        return this._category;
-	    };
-	    /**
-	     * Get the class name(s) for the primary command node.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The class name(s) to add to the primary command node.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setClassName]]
-	     */
-	    SimpleCommand.prototype.className = function (args) {
-	        return this._className;
-	    };
-	    /**
-	     * Test whether the command is enabled for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is enabled, `false` otherwise.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setEnabled]]
-	     */
-	    SimpleCommand.prototype.isEnabled = function (args) {
-	        return this._enabled;
-	    };
-	    /**
-	     * Test whether the command is visible for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is visible, `false` otherwise.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setVisible]]
-	     */
-	    SimpleCommand.prototype.isVisible = function (args) {
-	        return this._visible;
-	    };
-	    /**
-	     * Test whether the command is checked for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is checked, `false` otherwise.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setChecked]]
-	     */
-	    SimpleCommand.prototype.isChecked = function (args) {
-	        return this._checked;
-	    };
-	    /**
-	     * Set the text for the command.
-	     *
-	     * @param value - The text for the command.
-	     *
-	     * #### Notes
-	     * If the text changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setText = function (value) {
-	        if (this._text === value) {
-	            return;
-	        }
-	        this._text = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the icon for the command.
-	     *
-	     * @param value - The icon for the command.
-	     *
-	     * #### Notes
-	     * If the icon changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setIcon = function (value) {
-	        if (this._icon === value) {
-	            return;
-	        }
-	        this._icon = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the caption for the command.
-	     *
-	     * @param value - The caption for the command.
-	     *
-	     * #### Notes
-	     * If the caption changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setCaption = function (value) {
-	        if (this._caption === value) {
-	            return;
-	        }
-	        this._caption = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the category for the command.
-	     *
-	     * @param value - The category for the command.
-	     *
-	     * #### Notes
-	     * If the category changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setCategory = function (value) {
-	        if (this._category === value) {
-	            return;
-	        }
-	        this._category = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the class name for the command.
-	     *
-	     * @param value - The class name for the command.
-	     *
-	     * #### Notes
-	     * If the class name changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setClassName = function (value) {
-	        if (this._className === value) {
-	            return;
-	        }
-	        this._className = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the enabled state for the command.
-	     *
-	     * @param value - The enabled state for the command.
-	     *
-	     * #### Notes
-	     * If the state changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setEnabled = function (value) {
-	        if (this._enabled === value) {
-	            return;
-	        }
-	        this._enabled = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the visible state for the command.
-	     *
-	     * @param value - The visible state for the command.
-	     *
-	     * #### Notes
-	     * If the state changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setVisible = function (value) {
-	        if (this._visible === value) {
-	            return;
-	        }
-	        this._visible = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the checked state for the command.
-	     *
-	     * @param value - The checked state for the command.
-	     *
-	     * #### Notes
-	     * If the state changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setChecked = function (value) {
-	        if (this._checked === value) {
-	            return;
-	        }
-	        this._checked = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Execute the command with the specified arguments.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * #### Notes
-	     * Calling `execute` when `isEnabled` returns `false` may result in
-	     * undefined behavior.
-	     */
-	    SimpleCommand.prototype.execute = function (args) {
-	        this._handler.call(void 0, args);
-	    };
-	    return SimpleCommand;
-	})(Command);
-	exports.SimpleCommand = SimpleCommand;
-	/**
-	 * The namespace for the `Command` class private data.
-	 */
-	var CommandPrivate;
-	(function (CommandPrivate) {
-	    /**
-	     * A signal emitted when a command's state changes.
-	     */
-	    CommandPrivate.changedSignal = new phosphor_signaling_1.Signal();
-	})(CommandPrivate || (CommandPrivate = {}));
-
-
-/***/ },
-/* 60 */
-/***/ function(module, exports) {
-
-	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
-	|
-	| Distributed under the terms of the BSD 3-Clause License.
-	|
-	| The full license is in the file LICENSE, distributed with this software.
-	|----------------------------------------------------------------------------*/
-	'use strict';
-	/**
-	 * An object used for type-safe inter-object communication.
-	 *
-	 * #### Notes
-	 * Signals provide a type-safe implementation of the publish-subscribe
-	 * pattern. An object (publisher) declares which signals it will emit,
-	 * and consumers connect callbacks (subscribers) to those signals. The
-	 * subscribers are invoked whenever the publisher emits the signal.
-	 *
-	 * A `Signal` object must be bound to a sender in order to be useful.
-	 * A common pattern is to declare a `Signal` object as a static class
-	 * member, along with a convenience getter which binds the signal to
-	 * the `this` instance on-demand.
-	 *
-	 * #### Example
-	 * ```typescript
-	 * import { ISignal, Signal } from 'phosphor-signaling';
-	 *
-	 * class MyClass {
-	 *
-	 *   static valueChangedSignal = new Signal<MyClass, number>();
-	 *
-	 *   constructor(name: string) {
-	 *     this._name = name;
-	 *   }
-	 *
-	 *   get valueChanged(): ISignal<MyClass, number> {
-	 *     return MyClass.valueChangedSignal.bind(this);
-	 *   }
-	 *
-	 *   get name(): string {
-	 *     return this._name;
-	 *   }
-	 *
-	 *   get value(): number {
-	 *     return this._value;
-	 *   }
-	 *
-	 *   set value(value: number) {
-	 *     if (value !== this._value) {
-	 *       this._value = value;
-	 *       this.valueChanged.emit(value);
-	 *     }
-	 *   }
-	 *
-	 *   private _name: string;
-	 *   private _value = 0;
-	 * }
-	 *
-	 * function logger(sender: MyClass, value: number): void {
-	 *   console.log(sender.name, value);
-	 * }
-	 *
-	 * let m1 = new MyClass('foo');
-	 * let m2 = new MyClass('bar');
-	 *
-	 * m1.valueChanged.connect(logger);
-	 * m2.valueChanged.connect(logger);
-	 *
-	 * m1.value = 42;  // logs: foo 42
-	 * m2.value = 17;  // logs: bar 17
-	 * ```
-	 */
-	var Signal = (function () {
-	    function Signal() {
-	    }
-	    /**
-	     * Bind the signal to a specific sender.
-	     *
-	     * @param sender - The sender object to bind to the signal.
-	     *
-	     * @returns The bound signal object which can be used for connecting,
-	     *   disconnecting, and emitting the signal.
-	     */
-	    Signal.prototype.bind = function (sender) {
-	        return new BoundSignal(this, sender);
-	    };
-	    return Signal;
-	})();
-	exports.Signal = Signal;
-	/**
-	 * Remove all connections where the given object is the sender.
-	 *
-	 * @param sender - The sender object of interest.
-	 *
-	 * #### Example
-	 * ```typescript
-	 * disconnectSender(someObject);
-	 * ```
-	 */
-	function disconnectSender(sender) {
-	    var list = senderMap.get(sender);
-	    if (!list) {
-	        return;
-	    }
-	    var conn = list.first;
-	    while (conn !== null) {
-	        removeFromSendersList(conn);
-	        conn.callback = null;
-	        conn.thisArg = null;
-	        conn = conn.nextReceiver;
-	    }
-	    senderMap.delete(sender);
-	}
-	exports.disconnectSender = disconnectSender;
-	/**
-	 * Remove all connections where the given object is the receiver.
-	 *
-	 * @param receiver - The receiver object of interest.
-	 *
-	 * #### Notes
-	 * If a `thisArg` is provided when connecting a signal, that object
-	 * is considered the receiver. Otherwise, the `callback` is used as
-	 * the receiver.
-	 *
-	 * #### Example
-	 * ```typescript
-	 * // disconnect a regular object receiver
-	 * disconnectReceiver(myObject);
-	 *
-	 * // disconnect a plain callback receiver
-	 * disconnectReceiver(myCallback);
-	 * ```
-	 */
-	function disconnectReceiver(receiver) {
-	    var conn = receiverMap.get(receiver);
-	    if (!conn) {
-	        return;
-	    }
-	    while (conn !== null) {
-	        var next = conn.nextSender;
-	        conn.callback = null;
-	        conn.thisArg = null;
-	        conn.prevSender = null;
-	        conn.nextSender = null;
-	        conn = next;
-	    }
-	    receiverMap.delete(receiver);
-	}
-	exports.disconnectReceiver = disconnectReceiver;
-	/**
-	 * Clear all signal data associated with the given object.
-	 *
-	 * @param obj - The object for which the signal data should be cleared.
-	 *
-	 * #### Notes
-	 * This removes all signal connections where the object is used as
-	 * either the sender or the receiver.
-	 *
-	 * #### Example
-	 * ```typescript
-	 * clearSignalData(someObject);
-	 * ```
-	 */
-	function clearSignalData(obj) {
-	    disconnectSender(obj);
-	    disconnectReceiver(obj);
-	}
-	exports.clearSignalData = clearSignalData;
-	/**
-	 * A concrete implementation of ISignal.
-	 */
-	var BoundSignal = (function () {
-	    /**
-	     * Construct a new bound signal.
-	     */
-	    function BoundSignal(signal, sender) {
-	        this._signal = signal;
-	        this._sender = sender;
-	    }
-	    /**
-	     * Connect a callback to the signal.
-	     */
-	    BoundSignal.prototype.connect = function (callback, thisArg) {
-	        return connect(this._sender, this._signal, callback, thisArg);
-	    };
-	    /**
-	     * Disconnect a callback from the signal.
-	     */
-	    BoundSignal.prototype.disconnect = function (callback, thisArg) {
-	        return disconnect(this._sender, this._signal, callback, thisArg);
-	    };
-	    /**
-	     * Emit the signal and invoke the connected callbacks.
-	     */
-	    BoundSignal.prototype.emit = function (args) {
-	        emit(this._sender, this._signal, args);
-	    };
-	    return BoundSignal;
-	})();
-	/**
-	 * A struct which holds connection data.
-	 */
-	var Connection = (function () {
-	    function Connection() {
-	        /**
-	         * The signal for the connection.
-	         */
-	        this.signal = null;
-	        /**
-	         * The callback connected to the signal.
-	         */
-	        this.callback = null;
-	        /**
-	         * The `this` context for the callback.
-	         */
-	        this.thisArg = null;
-	        /**
-	         * The next connection in the singly linked receivers list.
-	         */
-	        this.nextReceiver = null;
-	        /**
-	         * The next connection in the doubly linked senders list.
-	         */
-	        this.nextSender = null;
-	        /**
-	         * The previous connection in the doubly linked senders list.
-	         */
-	        this.prevSender = null;
-	    }
-	    return Connection;
-	})();
-	/**
-	 * The list of receiver connections for a specific sender.
-	 */
-	var ConnectionList = (function () {
-	    function ConnectionList() {
-	        /**
-	         * The ref count for the list.
-	         */
-	        this.refs = 0;
-	        /**
-	         * The first connection in the list.
-	         */
-	        this.first = null;
-	        /**
-	         * The last connection in the list.
-	         */
-	        this.last = null;
-	    }
-	    return ConnectionList;
-	})();
-	/**
-	 * A mapping of sender object to its receiver connection list.
-	 */
-	var senderMap = new WeakMap();
-	/**
-	 * A mapping of receiver object to its sender connection list.
-	 */
-	var receiverMap = new WeakMap();
-	/**
-	 * Create a connection between a sender, signal, and callback.
-	 */
-	function connect(sender, signal, callback, thisArg) {
-	    // Coerce a `null` thisArg to `undefined`.
-	    thisArg = thisArg || void 0;
-	    // Search for an equivalent connection and bail if one exists.
-	    var list = senderMap.get(sender);
-	    if (list && findConnection(list, signal, callback, thisArg)) {
-	        return false;
-	    }
-	    // Create a new connection.
-	    var conn = new Connection();
-	    conn.signal = signal;
-	    conn.callback = callback;
-	    conn.thisArg = thisArg;
-	    // Add the connection to the receivers list.
-	    if (!list) {
-	        list = new ConnectionList();
-	        list.first = conn;
-	        list.last = conn;
-	        senderMap.set(sender, list);
-	    }
-	    else if (list.last === null) {
-	        list.first = conn;
-	        list.last = conn;
-	    }
-	    else {
-	        list.last.nextReceiver = conn;
-	        list.last = conn;
-	    }
-	    // Add the connection to the senders list.
-	    var receiver = thisArg || callback;
-	    var head = receiverMap.get(receiver);
-	    if (head) {
-	        head.prevSender = conn;
-	        conn.nextSender = head;
-	    }
-	    receiverMap.set(receiver, conn);
-	    return true;
-	}
-	/**
-	 * Break the connection between a sender, signal, and callback.
-	 */
-	function disconnect(sender, signal, callback, thisArg) {
-	    // Coerce a `null` thisArg to `undefined`.
-	    thisArg = thisArg || void 0;
-	    // Search for an equivalent connection and bail if none exists.
-	    var list = senderMap.get(sender);
-	    if (!list) {
-	        return false;
-	    }
-	    var conn = findConnection(list, signal, callback, thisArg);
-	    if (!conn) {
-	        return false;
-	    }
-	    // Remove the connection from the senders list. It will be removed
-	    // from the receivers list the next time the signal is emitted.
-	    removeFromSendersList(conn);
-	    // Clear the connection data so it becomes a dead connection.
-	    conn.callback = null;
-	    conn.thisArg = null;
-	    return true;
-	}
-	/**
-	 * Emit a signal and invoke the connected callbacks.
-	 */
-	function emit(sender, signal, args) {
-	    // If there is no connection list, there is nothing to do.
-	    var list = senderMap.get(sender);
-	    if (!list) {
-	        return;
-	    }
-	    // Prepare to dispatch the callbacks. Increment the reference count
-	    // on the list so that the list is cleaned only when the emit stack
-	    // is fully unwound.
-	    list.refs++;
-	    var dirty = false;
-	    var last = list.last;
-	    var conn = list.first;
-	    // Dispatch the callbacks. If a connection has a null callback, it
-	    // indicates the list is dirty. Connections which match the signal
-	    // are safely dispatched where all exceptions are logged. Dispatch
-	    // is stopped at the last connection for the current stack frame.
-	    while (conn !== null) {
-	        if (!conn.callback) {
-	            dirty = true;
-	        }
-	        else if (conn.signal === signal) {
-	            safeInvoke(conn, sender, args);
-	        }
-	        if (conn === last) {
-	            break;
-	        }
-	        conn = conn.nextReceiver;
-	    }
-	    // Decrement the reference count on the list.
-	    list.refs--;
-	    // Clean the list if it's dirty and the emit stack is fully unwound.
-	    if (dirty && list.refs === 0) {
-	        cleanList(list);
-	    }
-	}
-	/**
-	 * Safely invoke the callback for the given connection.
-	 *
-	 * Exceptions thrown by the callback will be caught and logged.
-	 */
-	function safeInvoke(conn, sender, args) {
-	    try {
-	        conn.callback.call(conn.thisArg, sender, args);
-	    }
-	    catch (err) {
-	        console.error('Exception in signal handler:', err);
-	    }
-	}
-	/**
-	 * Find a matching connection in the given connection list.
-	 *
-	 * Returns `null` if no matching connection is found.
-	 */
-	function findConnection(list, signal, callback, thisArg) {
-	    var conn = list.first;
-	    while (conn !== null) {
-	        if (conn.signal === signal &&
-	            conn.callback === callback &&
-	            conn.thisArg === thisArg) {
-	            return conn;
-	        }
-	        conn = conn.nextReceiver;
-	    }
-	    return null;
-	}
-	/**
-	 * Remove the dead connections from the given connection list.
-	 */
-	function cleanList(list) {
-	    var prev;
-	    var conn = list.first;
-	    while (conn !== null) {
-	        var next = conn.nextReceiver;
-	        if (!conn.callback) {
-	            conn.nextReceiver = null;
-	        }
-	        else if (!prev) {
-	            list.first = conn;
-	            prev = conn;
-	        }
-	        else {
-	            prev.nextReceiver = conn;
-	            prev = conn;
-	        }
-	        conn = next;
-	    }
-	    if (!prev) {
-	        list.first = null;
-	        list.last = null;
-	    }
-	    else {
-	        prev.nextReceiver = null;
-	        list.last = prev;
-	    }
-	}
-	/**
-	 * Remove a connection from the doubly linked list of senders.
-	 */
-	function removeFromSendersList(conn) {
-	    var receiver = conn.thisArg || conn.callback;
-	    if (!receiver) {
-	        return;
-	    }
-	    var prev = conn.prevSender;
-	    var next = conn.nextSender;
-	    if (prev === null && next === null) {
-	        receiverMap.delete(receiver);
-	    }
-	    else if (prev === null) {
-	        receiverMap.set(receiver, next);
-	        next.prevSender = null;
-	    }
-	    else if (next === null) {
-	        prev.nextSender = null;
-	    }
-	    else {
-	        prev.nextSender = next;
-	        next.prevSender = prev;
-	    }
-	    conn.prevSender = null;
-	    conn.nextSender = null;
-	}
-	//# sourceMappingURL=index.js.map
 
 /***/ },
 /* 61 */
@@ -14066,889 +13051,600 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var FuzzySearch = __webpack_require__(62);
-	var IndexOfFS = __webpack_require__(74);
-	var WordCountFS = __webpack_require__(76);
-	var LevenshteinFS = __webpack_require__(78);
+	var arrays = __webpack_require__(10);
+	var abstractmodel_1 = __webpack_require__(59);
+	var stringsearch_1 = __webpack_require__(62);
 	/**
-	 * An abstract base class for implementing command searchers.
+	 * An object for use with a standard palette model.
+	 *
+	 * #### Notes
+	 * Instances of this class will not typically be created directly by
+	 * the user. A palette model will create and return instances of the
+	 * class from its adder methods.
 	 */
-	var CommandMatcher = (function () {
-	    function CommandMatcher() {
-	    }
-	    return CommandMatcher;
-	})();
-	exports.CommandMatcher = CommandMatcher;
-	/**
-	 * A concrete implementation of CommandMatcher.
-	 */
-	var FuzzyMatcher = (function (_super) {
-	    __extends(FuzzyMatcher, _super);
+	var StandardPaletteItem = (function () {
 	    /**
-	     * Constructs a FuzzyMatcher object.
+	     * Construct a new standard palette item.
+	     *
+	     * @param options - The options for initializing the item.
 	     */
-	    function FuzzyMatcher(primary, secondary) {
-	        _super.call(this);
-	        this._primary = primary;
-	        this._secondary = secondary;
-	        this._ind = IndexOfFS({
-	            'minTermLength': 3,
-	            'maxIterations': 500,
-	            'factor': 3
-	        });
-	        this._word = WordCountFS({
-	            'maxWordTolerance': 3,
-	            'factor': 1
-	        });
-	        this._lev = LevenshteinFS({
-	            'maxDistanceTolerance': 3,
-	            'factor': 3
-	        });
+	    function StandardPaletteItem(options) {
+	        this._text = options.text;
+	        this._args = options.args;
+	        this._handler = options.handler;
+	        this._icon = options.icon || '';
+	        this._caption = options.caption || '';
+	        this._shortcut = options.shortcut || '';
+	        this._className = options.className || '';
+	        this._category = Private.normalizeCategory(options.category || '');
+	    }
+	    Object.defineProperty(StandardPaletteItem.prototype, "text", {
+	        /**
+	         * Get the primary text for the item.
+	         *
+	         * #### Notes
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this._text;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(StandardPaletteItem.prototype, "icon", {
+	        /**
+	         * Get the icon class name(s) for the item.
+	         *
+	         * #### Notes
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this._icon;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(StandardPaletteItem.prototype, "caption", {
+	        /**
+	         * Get the descriptive caption for the item.
+	         *
+	         * #### Notes
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this._caption;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(StandardPaletteItem.prototype, "shortcut", {
+	        /**
+	         * Get the keyboard shortcut for the item.
+	         *
+	         * #### Notes
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this._shortcut;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(StandardPaletteItem.prototype, "category", {
+	        /**
+	         * Get the category name for the item.
+	         *
+	         * #### Notes
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this._category;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(StandardPaletteItem.prototype, "className", {
+	        /**
+	         * Get the extra class name(s) for the item.
+	         *
+	         * #### Notes
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this._className;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(StandardPaletteItem.prototype, "handler", {
+	        /**
+	         * Get the handler function for the item.
+	         *
+	         * #### Notes
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this._handler;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(StandardPaletteItem.prototype, "args", {
+	        /**
+	         * Get the arguments for the handler.
+	         *
+	         * #### Notes
+	         * This is a read-only property.
+	         */
+	        get: function () {
+	            return this._args;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    return StandardPaletteItem;
+	})();
+	exports.StandardPaletteItem = StandardPaletteItem;
+	/**
+	 * A concrete palette model which holds a collection of palette items.
+	 *
+	 * #### Notes
+	 * This class is a reasonable option for populating command palettes
+	 * when the number of items is reasonable, and when the items can be
+	 * created ahead of time. If lazy searching of a large data set is
+	 * required, then a custom palette model should be used instead.
+	 */
+	var StandardPaletteModel = (function (_super) {
+	    __extends(StandardPaletteModel, _super);
+	    function StandardPaletteModel() {
+	        _super.apply(this, arguments);
+	        this._items = [];
 	    }
 	    /**
-	     * Execute the search with the specified string argument.
+	     * Get the items contained in the palette model.
 	     *
-	     * @param query - The string to be used as the search input.
+	     * @returns A new array of the current items in the model.
+	     */
+	    StandardPaletteModel.prototype.items = function () {
+	        return this._items.slice();
+	    };
+	    /**
+	     * Add a new palette item to the model.
 	     *
-	     * @param commands - The list of ICommandSearchItem-conforming objects to
-	     *    search over.
+	     * @param options - The options for initializing the item.
 	     *
-	     * @returns - A Promise resolving to a list of ICommandMatchResult
-	     *    objects.
+	     * @returns The palette item which was added to the model.
+	     */
+	    StandardPaletteModel.prototype.addItem = function (options) {
+	        var item = new StandardPaletteItem(options);
+	        this._items.push(item);
+	        this.changed.emit(void 0);
+	        return item;
+	    };
+	    /**
+	     * Add several new palette items to the model.
+	     *
+	     * @param options - The options for initializing the items.
+	     *
+	     * @returns The new palette items where were added to the model.
+	     */
+	    StandardPaletteModel.prototype.addItems = function (options) {
+	        var items = options.map(function (opts) { return new StandardPaletteItem(opts); });
+	        Array.prototype.push.apply(this._items, items);
+	        this.changed.emit(void 0);
+	        return items;
+	    };
+	    /**
+	     * Remove a palette item from the model.
+	     *
+	     * @param item - The item to remove from the model.
 	     *
 	     * #### Notes
-	     * This method with the private _processResults encapsulates the
-	     * external fuzzy matching library. No details of the library used
-	     * should leak outside of this public API.
+	     * If the item is not contained in the model, this is a no-op.
 	     */
-	    FuzzyMatcher.prototype.search = function (query, commands) {
-	        // Even though captions are optional, FuzzySearch needs them to be defined.
-	        commands.forEach(function (item) { return item.caption = item.caption || ''; });
-	        var primarySearch = new FuzzySearch(commands, {
-	            'minimumScore': 300,
-	            'termPath': this._primary
-	        });
-	        var secondarySearch = new FuzzySearch(commands, {
-	            'minimumScore': 300,
-	            'termPath': this._secondary
-	        });
-	        primarySearch.addModule(this._ind);
-	        primarySearch.addModule(this._word);
-	        secondarySearch.addModule(this._ind);
-	        secondarySearch.addModule(this._word);
-	        if (query.length > 2) {
-	            primarySearch.addModule(this._lev);
-	            secondarySearch.addModule(this._lev);
-	        }
-	        var primaryResult = this._processResults(primarySearch.search(query));
-	        var secondaryResult = secondarySearch.search(query);
-	        var combined = this._mergeResults(primaryResult, secondaryResult);
-	        return Promise.resolve(combined);
+	    StandardPaletteModel.prototype.removeItem = function (item) {
+	        var i = arrays.remove(this._items, item);
+	        if (i !== -1)
+	            this.changed.emit(void 0);
 	    };
-	    FuzzyMatcher.prototype._processResults = function (results) {
-	        var retval = [];
-	        if (!results) {
-	            return retval;
+	    /**
+	     * Remove several items from the model.
+	     *
+	     * @param items - The items to remove from the model.
+	     *
+	     * #### Notes
+	     * Items which are no contained in the model are ignored.
+	     */
+	    StandardPaletteModel.prototype.removeItems = function (items) {
+	        var rest = this._items.filter(function (other) { return items.indexOf(other) === -1; });
+	        if (rest.length === this._items.length) {
+	            return;
 	        }
-	        for (var _i = 0; _i < results.length; _i++) {
-	            var result = results[_i];
-	            retval.push({ score: result.score, id: result.value.id });
-	        }
-	        return retval;
+	        this._items = rest;
+	        this.changed.emit(void 0);
 	    };
-	    FuzzyMatcher.prototype._mergeResults = function (primary, secondary) {
-	        if (!secondary) {
-	            return primary;
+	    /**
+	     * Remove all items from the model.
+	     */
+	    StandardPaletteModel.prototype.clearItems = function () {
+	        if (this._items.length === 0) {
+	            return;
 	        }
-	        var primaryIds = primary.map(function (x) { return x.id; });
-	        for (var i = 0; i < secondary.length; ++i) {
-	            var id = secondary[i].value.id;
-	            var pid = primaryIds.indexOf(id);
-	            if (pid > -1) {
-	                primary[pid]['score'] += secondary[i].score;
+	        this._items.length = 0;
+	        this.changed.emit(void 0);
+	    };
+	    /**
+	     * Search the palette model for matching commands.
+	     *
+	     * @param query - The query text to match against the model items.
+	     *   The query should take the form `(<category>:)?<text>`. If a
+	     *   category is specified, the search will be limited to items
+	     *   which match the category.
+	     *
+	     * @returns An array of new search results for the query.
+	     */
+	    StandardPaletteModel.prototype.search = function (query) {
+	        // Split the query into the category and text components.
+	        var _a = abstractmodel_1.AbstractPaletteModel.splitQuery(query), category = _a.category, text = _a.text;
+	        // Collect a mapping of the matching categories. The mapping will
+	        // only contain categories which match the provided query text.
+	        // If the category is an empty string, all categories will be
+	        // matched with a score of `0` and a `null` indices array.
+	        var catmap = Private.matchCategory(this._items, category);
+	        // Filter the items for matching text. Only items which have a
+	        // category in the given map are considered. The category score
+	        // is added to the text score to create the final item score.
+	        // If the text is an empty string, all items will be matched
+	        // will a text score of `0` and `null` indices array.
+	        var scores = Private.matchText(this._items, text, catmap);
+	        // Sort the items based on their total item score. Ties are
+	        // broken by locale ordering the category followed by the text.
+	        scores.sort(Private.scoreCmp);
+	        // Group the item scores by category. The categories are added
+	        // to the map in the order they appear in the scores array.
+	        var groups = Private.groupScores(scores);
+	        // Return the results for the search. The headers are created in
+	        // the order of key iteration of the map. On major browsers, this
+	        // is insertion order. This means that headers are created in the
+	        // order of first appearance in the sorted scores array.
+	        return Private.createSearchResults(groups, catmap);
+	    };
+	    return StandardPaletteModel;
+	})(abstractmodel_1.AbstractPaletteModel);
+	exports.StandardPaletteModel = StandardPaletteModel;
+	/**
+	 * The namespace for the `StandardPaletteModel` private data.
+	 */
+	var Private;
+	(function (Private) {
+	    /**
+	     * Normalize a category for a palette item.
+	     *
+	     * @param category - The item category to normalize.
+	     *
+	     * @returns The normalized category text.
+	     *
+	     * #### Notes
+	     * This converts the category to lower case and removes any
+	     * extraneous whitespace.
+	     */
+	    function normalizeCategory(category) {
+	        return category.trim().replace(/\s+/g, ' ').toLowerCase();
+	    }
+	    Private.normalizeCategory = normalizeCategory;
+	    /**
+	     * Collect a mapping of the categories which match the given query.
+	     *
+	     * @param items - The palette items to search.
+	     *
+	     * @param query - The category portion of the palette model query.
+	     *
+	     * @returns A mapping of matched category to match score.
+	     *
+	     * #### Notes
+	     * The query string will be normalized by lower casing and removing
+	     * all whitespace. If the normalized query is an empty string, all
+	     * categories will be matched with a `0` score and `null` indices.
+	     */
+	    function matchCategory(items, query) {
+	        // Normalize the query text to lower case with no whitespace.
+	        query = normalizeQueryText(query);
+	        // Create the maps needed to track the match state.
+	        var seen = Object.create(null);
+	        var matched = Object.create(null);
+	        // Iterate over the items and match the categories.
+	        for (var _i = 0; _i < items.length; _i++) {
+	            var category = items[_i].category;
+	            // If a category has already been seen, no more work is needed.
+	            if (category in seen) {
+	                continue;
 	            }
-	            else {
-	                primary.push(this._processResults([secondary[i]])[0]);
+	            // Mark the category as seen so it is only processed once.
+	            seen[category] = true;
+	            // If the query is empty, all categories match by default.
+	            if (!query) {
+	                matched[category] = { score: 0, indices: null };
+	                continue;
+	            }
+	            // Run the matcher for the query and skip if no match.
+	            var match = stringsearch_1.StringSearch.sumOfSquares(category, query);
+	            if (!match) {
+	                continue;
+	            }
+	            // Store the match score in the results.
+	            matched[category] = match;
+	        }
+	        // Return the final mapping of matched categories.
+	        return matched;
+	    }
+	    Private.matchCategory = matchCategory;
+	    /**
+	     * Filter palette items for those with matching text and category.
+	     *
+	     * @param items - The palette items to search.
+	     *
+	     * @param query - The text portion of the palette model query.
+	     *
+	     * @param categories - A mapping of the valid item categories.
+	     *
+	     * @returns An array of item scores for the matching items.
+	     *
+	     * #### Notes
+	     * The query string will be normalized by lower casing and removing
+	     * all whitespace. If the normalized query is an empty string, all
+	     * items will be matched with a `0` text score and `null` indices.
+	     *
+	     * Items which have a category which is not present in the category
+	     * map will be ignored.
+	     *
+	     * The final item score is the sum of the item text score and the
+	     * relevant category score.
+	     *
+	     * This function does not sort the results.
+	     */
+	    function matchText(items, query, categories) {
+	        // Normalize the query text to lower case with no whitespace.
+	        query = normalizeQueryText(query);
+	        // Create the array to hold the resulting scores.
+	        var scores = [];
+	        // Iterate over the items and match the text with the query.
+	        for (var _i = 0; _i < items.length; _i++) {
+	            var item = items[_i];
+	            // Lookup the category score for the item category.
+	            var cs = categories[item.category];
+	            // If the category was not matched, the item is skipped.
+	            if (!cs) {
+	                continue;
+	            }
+	            // If the query is empty, all items are matched by default.
+	            if (!query) {
+	                scores.push({ score: cs.score, indices: null, item: item });
+	                continue;
+	            }
+	            // Run the matcher for the query and skip if no match.
+	            var match = stringsearch_1.StringSearch.sumOfSquares(item.text.toLowerCase(), query);
+	            if (!match) {
+	                continue;
+	            }
+	            // Create the match score for the item.
+	            var score = cs.score + match.score;
+	            scores.push({ score: score, indices: match.indices, item: item });
+	        }
+	        // Return the final array of matched item scores.
+	        return scores;
+	    }
+	    Private.matchText = matchText;
+	    /**
+	     * A sort comparison function for a palette item match score.
+	     *
+	     * #### Notes
+	     * This orders the items first based on score (lower is better), then
+	     * by locale order of the item category followed by the item text.
+	     */
+	    function scoreCmp(a, b) {
+	        var d1 = a.score - b.score;
+	        if (d1 !== 0) {
+	            return d1;
+	        }
+	        var d2 = a.item.category.localeCompare(b.item.category);
+	        if (d2 !== 0) {
+	            return d2;
+	        }
+	        return a.item.text.localeCompare(b.item.text);
+	    }
+	    Private.scoreCmp = scoreCmp;
+	    /**
+	     * Group item scores by item category.
+	     *
+	     * @param scores - The items to group by category.
+	     *
+	     * @returns A mapping of category name to group of items.
+	     *
+	     * #### Notes
+	     * The categories are added to the map in the order of first
+	     * appearance in the `scores` array.
+	     */
+	    function groupScores(scores) {
+	        var result = Object.create(null);
+	        for (var _i = 0; _i < scores.length; _i++) {
+	            var score = scores[_i];
+	            var cat = score.item.category;
+	            (result[cat] || (result[cat] = [])).push(score);
+	        }
+	        return result;
+	    }
+	    Private.groupScores = groupScores;
+	    /**
+	     * Create the search results for a collection of item scores.
+	     *
+	     * @param groups - The item scores, grouped by category.
+	     *
+	     * @param categories - A mapping of category scores.
+	     *
+	     * @returns A flat array of search results for the groups.
+	     *
+	     * #### Notes
+	     * This function renders the groups in iteration order, which on all
+	     * major browsers is order of insertion (a de facto standard).
+	     */
+	    function createSearchResults(groups, categories) {
+	        var results = [];
+	        for (var cat in groups) {
+	            results.push(createHeaderResult(cat, categories[cat]));
+	            for (var _i = 0, _a = groups[cat]; _i < _a.length; _i++) {
+	                var score = _a[_i];
+	                results.push(createCommandResult(score));
 	            }
 	        }
-	        return primary;
-	    };
-	    return FuzzyMatcher;
-	})(CommandMatcher);
-	exports.FuzzyMatcher = FuzzyMatcher;
+	        return results;
+	    }
+	    Private.createSearchResults = createSearchResults;
+	    /**
+	     * Normalize the query text for a palette item.
+	     *
+	     * @param text - The category or text portion of a palette query.
+	     *
+	     * @returns The normalized query text.
+	     *
+	     * #### Notes
+	     * The text is normalized by converting to lower case and removing
+	     * all whitespace.
+	     */
+	    function normalizeQueryText(text) {
+	        return text.replace(/\s+/g, '').toLowerCase();
+	    }
+	    /**
+	     * Create a header search result for the given data.
+	     *
+	     * @param category - The category name for the header.
+	     *
+	     * @param score - The score for the category match.
+	     *
+	     * @returns A header search result for the given data.
+	     */
+	    function createHeaderResult(category, score) {
+	        var text = highlightText(category, score.indices);
+	        return { type: abstractmodel_1.SearchResultType.Header, value: { text: text, category: category } };
+	    }
+	    /**
+	     * Create a command search result for the given data.
+	     *
+	     * @param score - The score for the item match.
+	     *
+	     * @returns A command search result for the given data.
+	     */
+	    function createCommandResult(score) {
+	        var text = highlightText(score.item.text, score.indices);
+	        var _a = score.item, icon = _a.icon, caption = _a.caption, shortcut = _a.shortcut, className = _a.className, handler = _a.handler, args = _a.args;
+	        var value = { text: text, icon: icon, caption: caption, shortcut: shortcut, className: className, handler: handler, args: args };
+	        return { type: abstractmodel_1.SearchResultType.Command, value: value };
+	    }
+	    /**
+	     * Highlight the matching character of the given text.
+	     *
+	     * @param text - The text to highlight.
+	     *
+	     * @param indices - The character indices to highlight, or `null`.
+	     *
+	     * @returns The text interpolated with `<mark>` tags as needed.
+	     */
+	    function highlightText(text, indices) {
+	        return indices ? stringsearch_1.StringSearch.highlight(text, indices) : text;
+	    }
+	})(Private || (Private = {}));
 
 
 /***/ },
 /* 62 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	"Use Strict";
-
-	var prime = __webpack_require__(63);
-	var trim = __webpack_require__(71);
-
-	var arr = {
-		'forEach': __webpack_require__(72)
-	};
-
-	var obj = {
-		'mixin': __webpack_require__(66),
-		'fromPath': __webpack_require__(73),
-		'create': __webpack_require__(69)
-	};
-
-
-	var FuzzySearch = prime({
-
-	    modules: null,
-
-	    options: {
-	        'caseSensitive': false,
-	        'termPath': '',
-	        'returnEmptyArray': false,
-	        'minimumScore': 0
-	    },
-
-	    constructor: function(searchSet, options) {
-	        this.options = obj.mixin(obj.create(this.options), options);
-	        this.searchSet = searchSet;
-	        this.modules = [];
-	    },
-
-	    addModule: function(mod) {
-	        this.modules.push(mod);
-	    },
-
-	    search: function(needle) {
-	        needle = !this.options.caseSensitive ? trim(needle).toLowerCase() : trim(needle);
-	        var result = [];
-
-	        arr.forEach(this.searchSet, function(value) {
-	            var origValue = value;
-	            var searchValue = this.options.termPath.length === 0 ? value : obj.fromPath(value, this.options.termPath);
-
-	            if (!this.options.caseSensitive) {
-	                searchValue = searchValue.toLowerCase();
-	            }
-
-	            var score = this.getCombinedModulePoints(needle, searchValue);
-
-	            if (score.combined >= this.options.minimumScore) result.push({'score': score.combined, 'details': score.details, 'value': origValue});
-	        }, this);
-
-	        if (!this.options.returnEmptyArray && result.length === 0) {
-	            return null;
+	/*-----------------------------------------------------------------------------
+	| Copyright (c) 2014-2016, PhosphorJS Contributors
+	|
+	| Distributed under the terms of the BSD 3-Clause License.
+	|
+	| The full license is in the file LICENSE, distributed with this software.
+	|----------------------------------------------------------------------------*/
+	'use strict';
+	/**
+	 * A namespace which holds string searching functionality.
+	 */
+	var StringSearch;
+	(function (StringSearch) {
+	    /**
+	     * Compute the sum-of-squares match for the given search text.
+	     *
+	     * @param sourceText - The text which should be searched.
+	     *
+	     * @param queryText - The query text to locate in the source text.
+	     *
+	     * @returns The match result object, or `null` if there is no match.
+	     *
+	     * #### Notes
+	     * This scoring algorithm uses a sum-of-squares approach to determine
+	     * the score. In order for there to be a match, all of the characters
+	     * in `queryText` **must** appear in `sourceText` in order. The index
+	     * of each matching character is squared and added to the score. This
+	     * means that early and consecutive character matches are preferred.
+	     *
+	     * The character match is performed with strict equality. It is case
+	     * sensitive and does not ignore whitespace. If those behaviors are
+	     * required, the text should be transformed before scoring.
+	     *
+	     * This has a runtime complexity of `O(n)` on `sourceText`.
+	     */
+	    function sumOfSquares(sourceText, queryText) {
+	        var score = 0;
+	        var indices = new Array(queryText.length);
+	        for (var i = 0, j = 0, n = queryText.length; i < n; ++i, ++j) {
+	            j = sourceText.indexOf(queryText[i], j);
+	            if (j === -1)
+	                return null;
+	            indices[i] = j;
+	            score += j * j;
 	        }
-
-	        return result.sort(function(a, b) {
-	            return b.score - a.score;
-	        });
-	    },
-
-	    getCombinedModulePoints: function(needle, haystack) {
-	        var result = {'combined': 0, 'details': []};
-	        arr.forEach(this.modules, function(mod) {
-	            var score = mod.search(needle, haystack).getPoints();
-	            var name = mod.getName();
-	            var factor = mod.getFactor();
-
-	            result.combined += factor * score;
-	            result.details.push({'name': name, 'score': score, 'factor': factor});
-	        });
-
-	        return result;
-	    },
-
-	    getMaximumScore: function() {
-	        var factorSum = 0;
-	        arr.forEach(this.modules, function(mod) {
-	            factorSum += mod.getFactor();
-	        });
-
-	        return 100 * factorSum;
+	        return { score: score, indices: indices };
 	    }
+	    StringSearch.sumOfSquares = sumOfSquares;
+	    /**
+	     * Highlight the matched characters of a source string.
+	     *
+	     * @param source - The text which should be highlighted.
+	     *
+	     * @param indices - The indices of the matched characters. They must
+	     *   appear in increasing order and must be in bounds of the source.
+	     *
+	     * @returns A string with interpolated `<mark>` tags.
+	     */
+	    function highlight(sourceText, indices) {
+	        var k = 0;
+	        var last = 0;
+	        var result = '';
+	        var n = indices.length;
+	        while (k < n) {
+	            var i = indices[k];
+	            var j = indices[k];
+	            while (++k < n && indices[k] === j + 1)
+	                j++;
+	            var head = sourceText.slice(last, i);
+	            var chunk = sourceText.slice(i, j + 1);
+	            result += head + "<mark>" + chunk + "</mark>";
+	            last = j + 1;
+	        }
+	        return result + sourceText.slice(last);
+	    }
+	    StringSearch.highlight = highlight;
+	})(StringSearch = exports.StringSearch || (exports.StringSearch = {}));
 
-	});
-
-	module.exports = FuzzySearch;
 
 /***/ },
 /* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/*
-	prime
-	 - prototypal inheritance
-	*/"use strict"
-
-	var hasOwn = __webpack_require__(64),
-	    forIn  = __webpack_require__(65),
-	    mixIn  = __webpack_require__(66),
-	    filter = __webpack_require__(68),
-	    create = __webpack_require__(69),
-	    type   = __webpack_require__(70)
-
-	var defineProperty           = Object.defineProperty,
-	    getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor
-
-	try {
-	    defineProperty({}, "~", {})
-	    getOwnPropertyDescriptor({}, "~")
-	} catch (e){
-	    defineProperty = null
-	    getOwnPropertyDescriptor = null
-	}
-
-	var define = function(value, key, from){
-	    defineProperty(this, key, getOwnPropertyDescriptor(from, key) || {
-	        writable: true,
-	        enumerable: true,
-	        configurable: true,
-	        value: value
-	    })
-	}
-
-	var copy = function(value, key){
-	    this[key] = value
-	}
-
-	var implement = function(proto){
-	    forIn(proto, defineProperty ? define : copy, this.prototype)
-	    return this
-	}
-
-	var verbs = /^constructor|inherits|mixin$/
-
-	var prime = function(proto){
-
-	    if (type(proto) === "function") proto = {constructor: proto}
-
-	    var superprime = proto.inherits
-
-	    // if our nice proto object has no own constructor property
-	    // then we proceed using a ghosting constructor that all it does is
-	    // call the parent's constructor if it has a superprime, else an empty constructor
-	    // proto.constructor becomes the effective constructor
-	    var constructor = (hasOwn(proto, "constructor")) ? proto.constructor : (superprime) ? function(){
-	        return superprime.apply(this, arguments)
-	    } : function(){}
-
-	    if (superprime){
-
-	        mixIn(constructor, superprime)
-
-	        var superproto = superprime.prototype
-	        // inherit from superprime
-	        var cproto = constructor.prototype = create(superproto)
-
-	        // setting constructor.parent to superprime.prototype
-	        // because it's the shortest possible absolute reference
-	        constructor.parent = superproto
-	        cproto.constructor = constructor
-	    }
-
-	    if (!constructor.implement) constructor.implement = implement
-
-	    var mixins = proto.mixin
-	    if (mixins){
-	        if (type(mixins) !== "array") mixins = [mixins]
-	        for (var i = 0; i < mixins.length; i++) constructor.implement(create(mixins[i].prototype))
-	    }
-
-	    // implement proto and return constructor
-	    return constructor.implement(filter(proto, function(value, key){
-	        return !key.match(verbs)
-	    }))
-
-	}
-
-	module.exports = prime
-
-
-/***/ },
-/* 64 */
-/***/ function(module, exports) {
-
-	/*
-	object:hasOwn
-	*/"use strict"
-
-	var hasOwnProperty = Object.hasOwnProperty
-
-	var hasOwn = function(self, key){
-	    return hasOwnProperty.call(self, key)
-	}
-
-	module.exports = hasOwn
-
-
-/***/ },
-/* 65 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	object:forIn
-	*/"use strict"
-
-	var has = __webpack_require__(64)
-
-	var forIn = function(self, method, context){
-	    for (var key in self) if (method.call(context, self[key], key, self) === false) break
-	    return self
-	}
-
-	if (!({valueOf: 0}).propertyIsEnumerable("valueOf")){ // fix for stupid IE enumeration bug
-
-	    var buggy = "constructor,toString,valueOf,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString".split(",")
-	    var proto = Object.prototype
-
-	    forIn = function(self, method, context){
-	        for (var key in self) if (method.call(context, self[key], key, self) === false) return self
-	        for (var i = 0; key = buggy[i]; i++){
-	            var value = self[key]
-	            if ((value !== proto[key] || has(self, key)) && method.call(context, value, key, self) === false) break
-	        }
-	        return self
-	    }
-
-	}
-
-	module.exports = forIn
-
-
-/***/ },
-/* 66 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	object:mixIn
-	*/"use strict"
-
-	var forOwn = __webpack_require__(67)
-
-	var copy = function(value, key){
-	    this[key] = value
-	}
-
-	var mixIn = function(self){
-	    for (var i = 1, l = arguments.length; i < l; i++) forOwn(arguments[i], copy, self)
-	    return self
-	}
-
-	module.exports = mixIn
-
-
-/***/ },
-/* 67 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	object:forOwn
-	*/"use strict"
-
-	var forIn  = __webpack_require__(65),
-	    hasOwn = __webpack_require__(64)
-
-	var forOwn = function(self, method, context){
-	    forIn(self, function(value, key){
-	        if (hasOwn(self, key)) return method.call(context, value, key, self)
-	    })
-	    return self
-	}
-
-	module.exports = forOwn
-
-
-/***/ },
-/* 68 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-	object:filter
-	*/"use strict"
-
-	var forIn = __webpack_require__(65)
-
-	var filter = function(self, method, context){
-	    var results = {}
-	    forIn(self, function(value, key){
-	        if (method.call(context, value, key, self)) results[key] = value
-	    })
-	    return results
-	}
-
-	module.exports = filter
-
-
-/***/ },
-/* 69 */
-/***/ function(module, exports) {
-
-	/*
-	object:create
-	*/"use strict"
-
-	var create = function(self){
-	    var constructor = function(){}
-	    constructor.prototype = self
-	    return new constructor
-	}
-
-	module.exports = create
-
-
-/***/ },
-/* 70 */
-/***/ function(module, exports) {
-
-	/*
-	type
-	*/"use strict"
-
-	var toString = Object.prototype.toString,
-	    types = /number|object|array|string|function|date|regexp|boolean/
-
-	var type = function(object){
-	    if (object == null) return "null"
-	    var string = toString.call(object).slice(8, -1).toLowerCase()
-	    if (string === "number" && isNaN(object)) return "null"
-	    if (types.test(string)) return string
-	    return "object"
-	}
-
-	module.exports = type
-
-
-/***/ },
-/* 71 */
-/***/ function(module, exports) {
-
-	/*
-	string:trim
-	*/"use strict"
-
-	var trim = function(self){
-	    return (self + "").replace(/^\s+|\s+$/g, "")
-	}
-
-	module.exports = trim
-
-
-/***/ },
-/* 72 */
-/***/ function(module, exports) {
-
-	/*
-	array:forEach
-	*/"use strict"
-
-	var forEach = function(self, method, context){
-	    for (var i = 0, l = self.length >>> 0; i < l; i++){
-	        if (method.call(context, self[i], i, self) === false) break
-	    }
-	    return self
-	}
-
-	module.exports = forEach
-
-
-/***/ },
-/* 73 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var hasOwn = __webpack_require__(64);
-
-	function fromPath(source, parts) {
-		"use strict";
-
-		if (typeof parts == 'string') parts = parts.split('.');
-		for (var i = 0, l = parts.length; i < l; i++) {
-			if (hasOwn(source, parts[i])) {
-				source = source[parts[i]];
-			} else {
-				return null;
-			}
-		}
-		return source;
-	}
-
-	module.exports = fromPath;
-
-/***/ },
-/* 74 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"Use Strict";
-
-	var prime = __webpack_require__(63);
-	var FSModule = __webpack_require__(75);
-	var arr = {
-		'forEach': __webpack_require__(72)
-	};
-
-	var IndexOfFS = prime({
-
-	    inherits: FSModule,
-
-	    name: 'IndexOfFS',
-	    options: {
-	        'minTermLength': 3,
-	        'maxIterations': 500,
-	        'factor': 1
-	    },
-
-	    search: function(searchTerm, searchHaystack) {
-	        this.lastTerm = searchTerm;
-	        this.lastHaystack = searchHaystack;
-	        var minLength = searchTerm.length >= this.options.minTermLength ? this.options.minTermLength : searchTerm.length;
-
-	        var matches = [];
-	        var iterations = 0;
-	        do {
-	            var cm = this.getClosestMatch(searchTerm, searchHaystack);
-	            if (cm.length >= minLength) {
-	                matches.push(cm);
-	            }
-
-	            var substrc = (cm.length - 1 > 0) ? cm.length : 1;
-	            searchTerm = searchTerm.substr(substrc);
-	            iterations++;
-	        } while (searchTerm.length >= minLength && iterations <= this.options.maxIterations);
-
-
-	        this.lastResults = matches;
-	        return this;
-	    },
-
-	    getClosestMatch: function(searchTerm, haystack) {
-	        if (haystack.indexOf(searchTerm) != -1) {
-	            return searchTerm;
-	        }
-
-	        var length = searchTerm.length;
-
-	        for (var i = 0; i <= length; i++) {
-	            var term = searchTerm.substr(0, i);
-	            if (haystack.indexOf(term) != -1) {
-	                continue;
-	            }
-
-	            return term.substr(0, i - 1);
-	        }
-
-	        return "";
-	    },
-
-	    getPoints: function() {
-	        var sum = 0;
-	        arr.forEach(this.lastResults, function(result) {
-	            sum += result.length;
-	        });
-
-	        return 100 / this.lastTerm.length * sum;
-	    }
-
-	});
-
-	module.exports = function(options) {return new IndexOfFS(options);};
-
-/***/ },
-/* 75 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"Use Strict";
-
-	var prime = __webpack_require__(63);
-	var obj = {
-		'mixin': __webpack_require__(66),
-		'create': __webpack_require__(69)
-	};
-	var FSModule = prime({
-
-	    lastTerm: '',
-	    lastHaystack: '',
-	    lastResults: null,
-
-	    options: {
-	        'factor': 1
-	    },
-
-	    constructor: function(options) {
-	        this.options = obj.mixin(obj.create(this.options), options);
-	        this.lastResults = [];
-	    },
-
-	    search: function(searchTerm) {
-	        throw new Error("search method not implemented");
-	    },
-
-	    getPoints: function() {
-	        throw new Error("getPoints method not implemented");
-	    },
-
-	    getMatches: function() {
-	        return this.lastResults;
-	    },
-
-	    getFactor: function() {
-	        return this.options.factor || 1;
-	    },
-
-	    getName: function() {
-	        if (!this.name) throw new Error("set module name!");
-
-	        return this.name;
-	    }
-
-	});
-
-	module.exports = FSModule;
-
-/***/ },
-/* 76 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"Use Strict";
-
-	var prime = __webpack_require__(63);
-	var FSModule = __webpack_require__(75);
-	var number = {
-		'limit': __webpack_require__(77)
-	};
-
-	var WordCountFS = prime({
-
-	    inherits: FSModule,
-
-	    name: 'WordCountFS',
-	    options: {
-	        'maxWordTolerance': 3
-	    },
-
-	    search: function(searchTerm, haystack) {
-	        this.lastTerm = searchTerm;
-	        this.lastHaystack = haystack;
-
-	        return this;
-	    },
-
-	    getPoints: function() {
-	        var needleWords = this.lastTerm.split(' ');
-	        var haystackWords = this.lastHaystack.split(' ');
-
-	        return 100 / this.options.maxWordTolerance * (this.options.maxWordTolerance - number.limit(Math.abs(haystackWords.length - needleWords.length), 0, this.options.maxWordTolerance));
-	    }
-
-	});
-
-	module.exports = function(options) {return new WordCountFS(options);};
-
-/***/ },
-/* 77 */
-/***/ function(module, exports) {
-
-	/*
-	number:limit
-	*/"use strict"
-
-	var limit = function(self, min, max){
-	    return Math.min(max, Math.max(min, self))
-	}
-
-	module.exports = limit
-
-
-/***/ },
-/* 78 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"Use Strict";
-
-	var prime = __webpack_require__(63);
-	var FSModule = __webpack_require__(75);
-	var arr = {
-		'forEach': __webpack_require__(72)
-	};
-	var lev = __webpack_require__(79);
-
-	var LevenshteinFS = prime({
-
-	    inherits: FSModule,
-
-	    name: 'LevenshteinFS',
-	    options: {
-	        'maxDistanceTolerance': 3
-	    },
-
-	    search: function(term, haystack) {
-	        this.lastTerm = term;
-	        this.lastHaystack = haystack;
-
-	        var needleWords = term.split(' ');
-	        var haystackWords = haystack.split(' ');
-
-	        var matches = [];
-
-	        var nwl = needleWords.length;
-	        var hwl = haystackWords.length;
-	        for (var i = 0; i < nwl; i++) {
-	            for (var j = 0; j < hwl; j++) {
-	                var needleWord = needleWords[i];
-	                var haystackWord = haystackWords[j];
-
-	                var score = lev(needleWord, haystackWord);
-
-	                if (score <= this.options.maxDistanceTolerance) {
-	                    matches.push({'match': needleWord, 'score': score});
-	                }
-	            }
-	        }
-
-	        this.lastResults = matches;
-
-	        return this;
-	    },
-
-	    getPoints: function() {
-	        var haystackWords = this.lastHaystack.split(' ');
-
-	        var combinedScore = 0;
-	        arr.forEach(this.lastResults, function(result) {
-	            combinedScore += result.score;
-	        });
-
-	        combinedScore += (haystackWords.length - this.lastResults.length) * this.options.maxDistanceTolerance;
-
-	        var points = 50 / haystackWords.length * this.lastResults.length;
-	        points += 50 / (haystackWords.length * this.options.maxDistanceTolerance) * (haystackWords.length * this.options.maxDistanceTolerance - combinedScore);
-
-	        return points;
-	    }
-
-	});
-
-	module.exports = function(options) {return new LevenshteinFS(options);};
-
-/***/ },
-/* 79 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;(function(root, factory){
-	  if (true) {
-	    !(__WEBPACK_AMD_DEFINE_RESULT__ = function(){
-	      return factory(root);
-	    }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	  } else if (typeof module == 'object' && module && module.exports) {
-	    module.exports = factory(root);
-	  } else {
-	    root.Levenshtein = factory(root);
-	  }
-	}(this, function(root){
-
-	  function forEach( array, fn ) { var i, length
-	    i = -1
-	    length = array.length
-	    while ( ++i < length )
-	      fn( array[ i ], i, array )
-	  }
-
-	  function map( array, fn ) { var result
-	    result = Array( array.length )
-	    forEach( array, function ( val, i, array ) {
-	      result[i] = fn( val, i, array )
-	    })
-	    return result
-	  }
-
-	  function reduce( array, fn, accumulator ) {
-	    forEach( array, function( val, i, array ) {
-	      accumulator = fn( val, i, array )
-	    })
-	    return accumulator
-	  }
-
-	  // Levenshtein distance
-	  function Levenshtein( str_m, str_n ) { var previous, current, matrix
-	    // Constructor
-	    matrix = this._matrix = []
-
-	    // Sanity checks
-	    if ( str_m == str_n )
-	      return this.distance = 0
-	    else if ( str_m == '' )
-	      return this.distance = str_n.length
-	    else if ( str_n == '' )
-	      return this.distance = str_m.length
-	    else {
-	      // Danger Will Robinson
-	      previous = [ 0 ]
-	      forEach( str_m, function( v, i ) { i++, previous[ i ] = i } )
-
-	      matrix[0] = previous
-	      forEach( str_n, function( n_val, n_idx ) {
-	        current = [ ++n_idx ]
-	        forEach( str_m, function( m_val, m_idx ) {
-	          m_idx++
-	          if ( str_m.charAt( m_idx - 1 ) == str_n.charAt( n_idx - 1 ) )
-	            current[ m_idx ] = previous[ m_idx - 1 ]
-	          else
-	            current[ m_idx ] = Math.min
-	              ( previous[ m_idx ]     + 1   // Deletion
-	              , current[  m_idx - 1 ] + 1   // Insertion
-	              , previous[ m_idx - 1 ] + 1   // Subtraction
-	              )
-	        })
-	        previous = current
-	        matrix[ matrix.length ] = previous
-	      })
-
-	      return this.distance = current[ current.length - 1 ]
-	    }
-	  }
-
-	  Levenshtein.prototype.toString = Levenshtein.prototype.inspect = function inspect ( no_print ) { var matrix, max, buff, sep, rows
-	    matrix = this.getMatrix()
-	    max = reduce( matrix,function( m, o ) {
-	      return Math.max( m, reduce( o, Math.max, 0 ) )
-	    }, 0 )
-	    buff = Array( ( max + '' ).length ).join( ' ' )
-
-	    sep = []
-	    while ( sep.length < (matrix[0] && matrix[0].length || 0) )
-	      sep[ sep.length ] = Array( buff.length + 1 ).join( '-' )
-	    sep = sep.join( '-+' ) + '-'
-
-	    rows = map( matrix, function( row ) { var cells
-	      cells = map( row, function( cell ) {
-	        return ( buff + cell ).slice( - buff.length )
-	      })
-	      return cells.join( ' |' ) + ' '
-	    })
-
-	    return rows.join( "\n" + sep + "\n" )
-	  }
-
-	  Levenshtein.prototype.getMatrix = function () {
-	    return this._matrix.slice()
-	  }
-
-	  Levenshtein.prototype.valueOf = function() {
-	    return this.distance
-	  }
-
-	  return Levenshtein
-
-	}));
-
-
-/***/ },
-/* 80 */
-/***/ function(module, exports, __webpack_require__) {
-
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(81);
+	var content = __webpack_require__(64);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(19)(content, {});
@@ -14957,8 +13653,8 @@
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../css-loader/index.js!./palette.css", function() {
-				var newContent = require("!!./../../../css-loader/index.js!./palette.css");
+			module.hot.accept("!!./../../css-loader/index.js!./index.css", function() {
+				var newContent = require("!!./../../css-loader/index.js!./index.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -14968,7 +13664,7 @@
 	}
 
 /***/ },
-/* 81 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(18)();
@@ -14976,13 +13672,13 @@
 
 
 	// module
-	exports.push([module.id, "/*-----------------------------------------------------------------------------\n| Copyright (c) 2014-2016, PhosphorJS Contributors\n|\n| Distributed under the terms of the BSD 3-Clause License.\n|\n| The full license is in the file LICENSE, distributed with this software.\n|----------------------------------------------------------------------------*/\n.p-CommandPalette {\n  display: flex;\n  flex-direction: column;\n}\n\n\n.p-CommandPalette-search {\n  flex: 0 0 auto;\n}\n\n\n.p-CommandPalette-content {\n  flex: 1 1 auto;\n  list-style-type: none;\n  margin: 0;\n  padding: 0;\n  min-height: 0;\n  overflow: auto;\n}\n\n.p-CommandPalette-header {\n  display: block;\n}\n\n.p-CommandPalette-commandTop {\n  display: flex;\n  flex-direction: row;\n}\n\n.p-CommandPalette-commandBottom {\n  display: flex;\n  flex-direction: row;\n}\n\n.p-CommandPalette-title {\n  flex-grow: 1;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n}\n\n.p-CommandPalette-shortcut {\n  flex-grow: 2;\n  text-align: right;\n  white-space: nowrap;\n}\n\n.p-CommandPalette-caption {\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n}\n\n.p-CommandPalette-caption:empty:before {\n  content: '\\A0';\n}\n", ""]);
+	exports.push([module.id, "/*-----------------------------------------------------------------------------\r\n| Copyright (c) 2014-2016, PhosphorJS Contributors\r\n|\r\n| Distributed under the terms of the BSD 3-Clause License.\r\n|\r\n| The full license is in the file LICENSE, distributed with this software.\r\n|----------------------------------------------------------------------------*/\r\n.p-CommandPalette {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n\r\n.p-CommandPalette-search {\r\n  flex: 0 0 auto;\r\n}\r\n\r\n\r\n.p-CommandPalette-content {\r\n  flex: 1 1 auto;\r\n  margin: 0;\r\n  padding: 0;\r\n  min-height: 0;\r\n  overflow: auto;\r\n  list-style-type: none;\r\n}\r\n\r\n\r\n.p-CommandPalette-item {\r\n  display: flex;\r\n  flex-direction: row;\r\n}\r\n\r\n\r\n.p-CommandPalette-itemIcon {\r\n  flex: 0 0 auto;\r\n}\r\n\r\n\r\n.p-CommandPalette-itemContent {\r\n  flex: 1 1 auto;\r\n}\r\n\r\n\r\n.p-CommandPalette-itemText {\r\n  display: block;\r\n  overflow: hidden;\r\n  white-space: nowrap;\r\n  text-overflow: ellipsis;\r\n}\r\n\r\n\r\n.p-CommandPalette-itemShortcut {\r\n  float: right;\r\n}\r\n\r\n\r\n.p-CommandPalette-itemCaption {\r\n  display: block;\r\n}\r\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 82 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -14994,7 +13690,8 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphor_disposable_1 = __webpack_require__(15);
-	var phosphor_keymap_1 = __webpack_require__(83);
+	var phosphor_keymap_1 = __webpack_require__(66);
+	var phosphor_signaling_1 = __webpack_require__(28);
 	var index_1 = __webpack_require__(8);
 	var index_2 = __webpack_require__(6);
 	/**
@@ -15009,21 +13706,19 @@
 	    container.register(index_1.IShortcutManager, ShortcutManager);
 	}
 	exports.register = register;
+	/**
+	 * An object for managing shortcuts.
+	 */
 	var ShortcutManager = (function () {
 	    /**
 	     * Construct a shortcut manager.
 	     */
 	    function ShortcutManager(registry) {
-	        var _this = this;
 	        this._keymap = null;
 	        this._commandRegistry = null;
 	        this._commandShortcutMap = {};
 	        this._keymap = new phosphor_keymap_1.KeymapManager();
 	        this._commandRegistry = registry;
-	        // Setup the keydown listener for the document.
-	        document.addEventListener('keydown', function (event) {
-	            _this._keymap.processKeydownEvent(event);
-	        });
 	    }
 	    /**
 	     * Create new shortcut manager instance.
@@ -15031,6 +13726,33 @@
 	    ShortcutManager.create = function (registry) {
 	        return new ShortcutManager(registry);
 	    };
+	    Object.defineProperty(ShortcutManager.prototype, "shortcutsAdded", {
+	        /**
+	         * A signal emitted when a shortcut is added to the manager.
+	         */
+	        get: function () {
+	            return ShortcutManagerPrivate.shortcutsAddedSignal.bind(this);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(ShortcutManager.prototype, "shortcutsRemoved", {
+	        /**
+	         * A signal emitted when a shortcut is removed from the manager.
+	         */
+	        get: function () {
+	            return ShortcutManagerPrivate.shortcutsRemovedSignal.bind(this);
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    Object.defineProperty(ShortcutManager.prototype, "keymap", {
+	        get: function () {
+	            return this._keymap;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
 	    /**
 	     * Add key bindings to the shortcut manager.
 	     *
@@ -15039,9 +13761,10 @@
 	     * @returns A disposable which removes the added key bindings.
 	     */
 	    ShortcutManager.prototype.add = function (items) {
+	        var _this = this;
 	        var bindings = [];
-	        for (var _i = 0; _i < items.length; _i++) {
-	            var item = items[_i];
+	        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+	            var item = items_1[_i];
 	            var id = item.command;
 	            var arr = this._commandShortcutMap[id];
 	            if (!arr) {
@@ -15049,95 +13772,103 @@
 	            }
 	            var exists = false;
 	            for (var i = 0; i < arr.length; ++i) {
-	                if (this._deepEqual(arr[i].args, item.args)) {
+	                if (deepEqual(arr[i].args, item.args)) {
 	                    console.log('Shortcut already set: ' + item.sequence);
 	                    exists = true;
 	                }
 	            }
-	            if (!exists) {
-	                arr.push({ args: item.args, sequence: item.sequence });
+	            // If the given command and args is already registered,
+	            // don't register it, just move on to the next one.
+	            if (exists) {
+	                continue;
 	            }
+	            arr.push({ args: item.args, sequence: item.sequence });
 	            bindings.push({
 	                sequence: item.sequence,
 	                selector: item.selector,
-	                command: this._commandRegistry.get(id),
+	                handler: this._handlerForKeymap(id),
 	                args: item.args
 	            });
 	        }
 	        var added = this._keymap.add(bindings);
+	        this.shortcutsAdded.emit(items.slice());
 	        return new phosphor_disposable_1.DisposableDelegate(function () {
 	            added.dispose();
-	            // remove from id -> sequence map.
+	            for (var i = 0; i < items.length; ++i) {
+	                var arr = _this._commandShortcutMap[items[i].command];
+	                for (var j = 0; j < arr.length; ++i) {
+	                    if (deepEqual(arr[j].args, items[i].args)) {
+	                        arr.splice(j, 1);
+	                        if (arr.length === 0) {
+	                            delete _this._commandShortcutMap[items[i].command];
+	                        }
+	                    }
+	                }
+	            }
+	            _this.shortcutsRemoved.emit(items.slice());
 	        });
 	    };
 	    /**
-	     * Test whether a handler with a specific id is registered.
+	     * Get the registered key sequences for the given command id and args.
 	     *
-	     * @param id - The id of the command of interest.
+	     * @param id - The command of interest.
 	     *
-	     * @returns `true` if the id is registered, `false` otherwise.
-	     */
-	    ShortcutManager.prototype.hasCommand = function (id) {
-	        return id in this._commandShortcutMap;
-	    };
-	    /**
-	     * Lookup a handler with a specific id.
-	     *
-	     * @param id - The id of the handler of interest.
-	     *
-	     * @returns The keybindings for the specified id, or `undefined`.
+	     * @returns The keybindings for the specified id and args, or `undefined`.
 	     */
 	    ShortcutManager.prototype.getSequences = function (id, args) {
 	        var result = [];
 	        var arr = this._commandShortcutMap[id];
 	        if (arr) {
 	            for (var i = 0; i < arr.length; ++i) {
-	                if (this._deepEqual(arr[i].args, args)) {
+	                if (deepEqual(arr[i].args, args)) {
 	                    result.push(arr[i].sequence);
 	                }
 	            }
 	            return result;
 	        }
 	    };
-	    /**
-	     * Recursively perform deep equality testing on arbitrary object trees.
-	     */
-	    ShortcutManager.prototype._deepEqual = function (x, y) {
-	        return (x && y && typeof x === 'object' && typeof y === 'object') ?
-	            (Object.keys(x).length === Object.keys(y).length) &&
-	                Object.keys(x).reduce(function (isEqual, key) {
-	                    return isEqual && this._deepEqual(x[key], y[key]);
-	                }, true) : (x === y);
-	    };
-	    /**
-	     * Convert a command into a handler suitable for keyboard shortcuts.
-	     *
-	     * @param id - The command id.
-	     *
-	     * @param args - Arguments to be passed to the command.
-	     *
-	     * @returns A zero-argument handler which returns a boolean.
-	     */
-	    ShortcutManager.prototype._commandToKeyHandler = function (id, args) {
-	        var registry = this._commandRegistry;
-	        var keyHandler = function () {
-	            var command = registry.get(id);
-	            if (command) {
-	                command.execute(args);
-	                return true;
-	            }
-	            return false;
+	    ShortcutManager.prototype._handlerForKeymap = function (id) {
+	        var handler = this._commandRegistry.get(id);
+	        return function (args) {
+	            handler(args);
+	            return true;
 	        };
-	        return keyHandler;
 	    };
+	    /**
+	     * The dependencies required by the shortcut manager.
+	     */
 	    ShortcutManager.requires = [index_2.ICommandRegistry];
 	    return ShortcutManager;
-	})();
+	}());
 	exports.ShortcutManager = ShortcutManager;
+	/**
+	 * Recursively perform deep equality testing on arbitrary object trees.
+	 */
+	function deepEqual(x, y) {
+	    return (x && y && typeof x === 'object' && typeof y === 'object') ?
+	        (Object.keys(x).length === Object.keys(y).length) &&
+	            Object.keys(x).reduce(function (isEqual, key) {
+	                return isEqual && deepEqual(x[key], y[key]);
+	            }, true) : (x === y);
+	}
+	/**
+	 * The namespace for the `ShortcutManager` class private data.
+	 */
+	var ShortcutManagerPrivate;
+	(function (ShortcutManagerPrivate) {
+	    /**
+	     * A signal emitted when a shortcut is added to the manager.
+	     */
+	    ShortcutManagerPrivate.shortcutsAddedSignal = new phosphor_signaling_1.Signal();
+	    /**
+	     * A signal emitted when a shortcut is added to the manager.
+	     */
+	    ShortcutManagerPrivate.shortcutsRemovedSignal = new phosphor_signaling_1.Signal();
+	})(ShortcutManagerPrivate || (ShortcutManagerPrivate = {}));
 
 
 /***/ },
-/* 83 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -15151,12 +13882,12 @@
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
-	__export(__webpack_require__(84));
-	__export(__webpack_require__(85));
+	__export(__webpack_require__(67));
+	__export(__webpack_require__(68));
 
 
 /***/ },
-/* 84 */
+/* 67 */
 /***/ function(module, exports) {
 
 	/*-----------------------------------------------------------------------------
@@ -15514,7 +14245,7 @@
 
 
 /***/ },
-/* 85 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -15525,10 +14256,9 @@
 	| The full license is in the file LICENSE, distributed with this software.
 	|----------------------------------------------------------------------------*/
 	'use strict';
-	var clear_cut_1 = __webpack_require__(86);
-	var phosphor_command_1 = __webpack_require__(87);
+	var clear_cut_1 = __webpack_require__(69);
 	var phosphor_disposable_1 = __webpack_require__(15);
-	var keyboard_1 = __webpack_require__(84);
+	var keyboard_1 = __webpack_require__(67);
 	/**
 	 * A class which manages a collection of key bindings.
 	 */
@@ -15711,8 +14441,8 @@
 	    }
 	    return {
 	        sequence: sequence,
-	        command: binding.command,
-	        args: binding.args || null,
+	        args: binding.args,
+	        handler: binding.handler,
 	        selector: binding.selector,
 	        specificity: clear_cut_1.calculateSpecificity(binding.selector),
 	    };
@@ -15780,11 +14510,10 @@
 	    var target = event.target;
 	    while (target) {
 	        for (var _i = 0, _a = findOrderedMatches(bindings, target); _i < _a.length; _i++) {
-	            var _b = _a[_i], command = _b.command, args = _b.args;
-	            if (command.isEnabled(args)) {
+	            var _b = _a[_i], handler = _b.handler, args = _b.args;
+	            if (handler(args)) {
 	                event.preventDefault();
 	                event.stopPropagation();
-	                phosphor_command_1.safeExecute(command, args);
 	                return;
 	            }
 	        }
@@ -15822,7 +14551,7 @@
 
 
 /***/ },
-/* 86 */
+/* 69 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/**
@@ -15949,505 +14678,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 87 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*-----------------------------------------------------------------------------
-	| Copyright (c) 2014-2015, PhosphorJS Contributors
-	|
-	| Distributed under the terms of the BSD 3-Clause License.
-	|
-	| The full license is in the file LICENSE, distributed with this software.
-	|----------------------------------------------------------------------------*/
-	'use strict';
-	var __extends = (this && this.__extends) || function (d, b) {
-	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	};
-	var phosphor_signaling_1 = __webpack_require__(28);
-	/**
-	 * An abstract base class for implementing concrete commands.
-	 */
-	var Command = (function () {
-	    function Command() {
-	    }
-	    Object.defineProperty(Command.prototype, "changed", {
-	        /**
-	         * A signal emitted when the command's state changes.
-	         *
-	         * #### Notes
-	         * A subclass should emit this signal when the command state changes.
-	         */
-	        get: function () {
-	            return CommandPrivate.changedSignal.bind(this);
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    /**
-	     * Get the display text for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The display text for the command.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * use this as the text for the primary DOM node for the command.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.text = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Get the class name(s) for the command icon.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The class name(s) to add to the command icon node.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * add the class name(s) to the DOM node for the command icon.
-	     *
-	     * Multiple class names can be separated with whitespace.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.icon = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Get the short caption for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The short caption for the command.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * This value is used by UI elements where displaying a short command
-	     * description is relevant, such as tooltips and command palettes.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.caption = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Get the category for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The category for the command.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * This value is used by UI elements which group commands together
-	     * based on category, such as toolbars and command palettes.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.category = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Get the class name(s) for the primary command node.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The class name(s) to add to the primary command node.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * add the class name(s) to the primary DOM node for the command.
-	     *
-	     * Multiple class names can be separated with whitespace.
-	     *
-	     * The default implementation of this method returns an empty string.
-	     */
-	    Command.prototype.className = function (args) {
-	        return '';
-	    };
-	    /**
-	     * Test whether the command is enabled for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is enabled, `false` otherwise.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * typically display a non-enabled command as greyed-out.
-	     *
-	     * The default implementation of this method returns `true`.
-	     */
-	    Command.prototype.isEnabled = function (args) {
-	        return true;
-	    };
-	    /**
-	     * Test whether the command is checked for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is checked, `false` otherwise.
-	     *
-	     * #### Notes
-	     * A subclass may reimplement this method as needed. If the state
-	     * changes at runtime, the [[changed]] signal should be emitted.
-	     *
-	     * UI elements which have a visual representation of a command will
-	     * typically add extra class names to the node of a checked command.
-	     *
-	     * The default implementation of this method returns `false`.
-	     */
-	    Command.prototype.isChecked = function (args) {
-	        return false;
-	    };
-	    return Command;
-	})();
-	exports.Command = Command;
-	/**
-	 * Safely execute a command.
-	 *
-	 * @param command - The command to execute.
-	 *
-	 * @param args - The arguments for the command. If the command does
-	 *   not require arguments, this may be `null`.
-	 *
-	 * #### Notes
-	 * If the commmand throws an exception, it will be caught and logged.
-	 */
-	function safeExecute(command, args) {
-	    try {
-	        command.execute(args);
-	    }
-	    catch (err) {
-	        console.error(err);
-	    }
-	}
-	exports.safeExecute = safeExecute;
-	/**
-	 * A concrete implementation of [[Command]].
-	 *
-	 * A `SimpleCommand` is useful for creating commands which do not rely
-	 * on complex state and which can be implemented by a single function.
-	 *
-	 * A `SimpleCommand` should not be used when fine grained control over
-	 * the command state is required. For those cases, the `Command` class
-	 * should be subclassed directly.
-	 */
-	var SimpleCommand = (function (_super) {
-	    __extends(SimpleCommand, _super);
-	    /**
-	     * Construct a new simple command.
-	     *
-	     * @param options - The options for initializing the command.
-	     */
-	    function SimpleCommand(options) {
-	        _super.call(this);
-	        this._text = '';
-	        this._icon = '';
-	        this._caption = '';
-	        this._category = '';
-	        this._className = '';
-	        this._enabled = true;
-	        this._checked = false;
-	        this._handler = options.handler;
-	        if (options.text !== void 0) {
-	            this._text = options.text;
-	        }
-	        if (options.icon !== void 0) {
-	            this._icon = options.icon;
-	        }
-	        if (options.caption !== void 0) {
-	            this._caption = options.caption;
-	        }
-	        if (options.category !== void 0) {
-	            this._category = options.category;
-	        }
-	        if (options.className !== void 0) {
-	            this._className = options.className;
-	        }
-	        if (options.enabled !== void 0) {
-	            this._enabled = options.enabled;
-	        }
-	        if (options.checked !== void 0) {
-	            this._checked = options.checked;
-	        }
-	    }
-	    /**
-	     * Get the display text for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The display text for the command.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setText]]
-	     */
-	    SimpleCommand.prototype.text = function (args) {
-	        return this._text;
-	    };
-	    /**
-	     * Get the class name(s) for the command icon.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The class name(s) to add to the command icon node.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setIcon]]
-	     */
-	    SimpleCommand.prototype.icon = function (args) {
-	        return this._icon;
-	    };
-	    /**
-	     * Get the short caption for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The short caption for the command.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setCaption]]
-	     */
-	    SimpleCommand.prototype.caption = function (args) {
-	        return this._caption;
-	    };
-	    /**
-	     * Get the category for the command.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The category for the command.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setCategory]]
-	     */
-	    SimpleCommand.prototype.category = function (args) {
-	        return this._category;
-	    };
-	    /**
-	     * Get the class name(s) for the primary command node.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns The class name(s) to add to the primary command node.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setClassName]]
-	     */
-	    SimpleCommand.prototype.className = function (args) {
-	        return this._className;
-	    };
-	    /**
-	     * Test whether the command is enabled for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is enabled, `false` otherwise.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setEnabled]]
-	     */
-	    SimpleCommand.prototype.isEnabled = function (args) {
-	        return this._enabled;
-	    };
-	    /**
-	     * Test whether the command is checked for its current state.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * @returns `true` if the command is checked, `false` otherwise.
-	     *
-	     * #### Notes
-	     * This method ignores the command arguments.
-	     *
-	     * **See also** [[setChecked]]
-	     */
-	    SimpleCommand.prototype.isChecked = function (args) {
-	        return this._checked;
-	    };
-	    /**
-	     * Set the text for the command.
-	     *
-	     * @param value - The text for the command.
-	     *
-	     * #### Notes
-	     * If the text changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setText = function (value) {
-	        if (this._text === value) {
-	            return;
-	        }
-	        this._text = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the icon for the command.
-	     *
-	     * @param value - The icon for the command.
-	     *
-	     * #### Notes
-	     * If the icon changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setIcon = function (value) {
-	        if (this._icon === value) {
-	            return;
-	        }
-	        this._icon = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the caption for the command.
-	     *
-	     * @param value - The caption for the command.
-	     *
-	     * #### Notes
-	     * If the caption changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setCaption = function (value) {
-	        if (this._caption === value) {
-	            return;
-	        }
-	        this._caption = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the category for the command.
-	     *
-	     * @param value - The category for the command.
-	     *
-	     * #### Notes
-	     * If the category changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setCategory = function (value) {
-	        if (this._category === value) {
-	            return;
-	        }
-	        this._category = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the class name for the command.
-	     *
-	     * @param value - The class name for the command.
-	     *
-	     * #### Notes
-	     * If the class name changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setClassName = function (value) {
-	        if (this._className === value) {
-	            return;
-	        }
-	        this._className = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the enabled state for the command.
-	     *
-	     * @param value - The enabled state for the command.
-	     *
-	     * #### Notes
-	     * If the state changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setEnabled = function (value) {
-	        if (this._enabled === value) {
-	            return;
-	        }
-	        this._enabled = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Set the checked state for the command.
-	     *
-	     * @param value - The checked state for the command.
-	     *
-	     * #### Notes
-	     * If the state changes, the [[changed]] signal will be emitted.
-	     */
-	    SimpleCommand.prototype.setChecked = function (value) {
-	        if (this._checked === value) {
-	            return;
-	        }
-	        this._checked = value;
-	        this.changed.emit(void 0);
-	    };
-	    /**
-	     * Execute the command with the specified arguments.
-	     *
-	     * @param args - The arguments for the command. If the command does
-	     *   not require arguments, this may be `null`.
-	     *
-	     * #### Notes
-	     * Calling `execute` when `isEnabled` returns `false` may result in
-	     * undefined behavior.
-	     */
-	    SimpleCommand.prototype.execute = function (args) {
-	        this._handler.call(void 0, args);
-	    };
-	    return SimpleCommand;
-	})(Command);
-	exports.SimpleCommand = SimpleCommand;
-	/**
-	 * The namespace for the `Command` class private data.
-	 */
-	var CommandPrivate;
-	(function (CommandPrivate) {
-	    /**
-	     * A signal emitted when a command's state changes.
-	     */
-	    CommandPrivate.changedSignal = new phosphor_signaling_1.Signal();
-	})(CommandPrivate || (CommandPrivate = {}));
-
-
-/***/ },
-/* 88 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -16469,22 +14700,26 @@
 	 * Application injects the UI chrome (palette, menus, etc.) into an `IAppShell`.
 	 */
 	var Application = (function () {
-	    function Application(shell, palette) {
-	        palette.title.text = 'Commands';
-	        shell.addToLeftArea(palette, { rank: 40 });
+	    function Application(shell, palette, shortcuts) {
+	        palette.widget.title.text = 'Commands';
+	        shell.addToLeftArea(palette.widget, { rank: 40 });
 	        shell.attach(document.body);
 	        window.addEventListener('resize', function () { shell.update(); });
+	        // Setup the keydown listener for the document.
+	        document.addEventListener('keydown', function (event) {
+	            shortcuts.keymap.processKeydownEvent(event);
+	        });
 	    }
-	    Application.create = function (shell, palette) {
-	        return new Application(shell, palette);
+	    Application.create = function (shell, palette, shortcuts) {
+	        return new Application(shell, palette, shortcuts);
 	    };
-	    Application.requires = [phosphide_1.IAppShell, phosphide_1.ICommandPalette];
+	    Application.requires = [phosphide_1.IAppShell, phosphide_1.ICommandPalette, phosphide_1.IShortcutManager];
 	    return Application;
 	})();
 
 
 /***/ },
-/* 89 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -16496,7 +14731,6 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
-	var phosphor_command_1 = __webpack_require__(59);
 	var phosphor_widget_1 = __webpack_require__(26);
 	function resolve(container) {
 	    return container.resolve(RedHandler).then(function (handler) {
@@ -16504,13 +14738,8 @@
 	    });
 	}
 	exports.resolve = resolve;
-	function createCommand(n) {
-	    return new phosphor_command_1.SimpleCommand({
-	        handler: function (message) { console.log("COMMAND: " + message); },
-	        category: 'Red',
-	        text: 'Red ' + n.toString(),
-	        caption: 'Caption - red ' + n.toString()
-	    });
+	function createHandler() {
+	    return function (message) { console.log("COMMAND: " + message); };
 	}
 	var RedHandler = (function () {
 	    function RedHandler(shell, commands, palette, shortcuts) {
@@ -16528,20 +14757,56 @@
 	        widget.title.text = 'Red';
 	        this._shell.addToRightArea(widget, { rank: 30 });
 	        var registryItems = [
-	            { id: 'red:show-0', command: createCommand(0) },
-	            { id: 'red:show-1', command: createCommand(1) },
-	            { id: 'red:show-2', command: createCommand(2) },
-	            { id: 'red:show-3', command: createCommand(3) },
-	            { id: 'red:show-4', command: createCommand(4) },
-	            { id: 'red:show-5', command: createCommand(5) }
+	            { id: 'red:show-0', handler: createHandler() },
+	            { id: 'red:show-1', handler: createHandler() },
+	            { id: 'red:show-2', handler: createHandler() },
+	            { id: 'red:show-3', handler: createHandler() },
+	            { id: 'red:show-4', handler: createHandler() },
+	            { id: 'red:show-5', handler: createHandler() }
 	        ];
 	        var paletteItems = [
-	            { id: 'red:show-0', args: 'Red is best!' },
-	            { id: 'red:show-1', args: 'Red number one' },
-	            { id: 'red:show-2', args: 'Red number two' },
-	            { id: 'red:show-3', args: 'Red number three' },
-	            { id: 'red:show-4', args: 'Red number four' },
-	            { id: 'red:show-5', args: 'Red number five' }
+	            {
+	                id: 'red:show-0',
+	                args: 'Red is best!',
+	                text: 'Red 0',
+	                caption: 'Red is best!',
+	                category: 'All Colours'
+	            },
+	            {
+	                id: 'red:show-1',
+	                args: 'Red number one',
+	                text: 'Red 1',
+	                caption: 'Red number one',
+	                category: 'Red'
+	            },
+	            {
+	                id: 'red:show-2',
+	                args: 'Red number two',
+	                text: 'Red 2',
+	                caption: 'Red number two',
+	                category: 'Red'
+	            },
+	            {
+	                id: 'red:show-3',
+	                args: 'Red number three',
+	                text: 'Red 3',
+	                caption: 'Red number three',
+	                category: 'Red'
+	            },
+	            {
+	                id: 'red:show-4',
+	                args: 'Red number four',
+	                text: 'Red 4',
+	                caption: 'Red number four',
+	                category: 'Red'
+	            },
+	            {
+	                id: 'red:show-5',
+	                args: 'Red number five',
+	                text: 'Red 5',
+	                caption: 'Red number five',
+	                category: 'Red'
+	            }
 	        ];
 	        var shortcutItems = [
 	            {
@@ -16561,7 +14826,7 @@
 
 
 /***/ },
-/* 90 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -16573,7 +14838,6 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
-	var phosphor_command_1 = __webpack_require__(59);
 	var phosphor_widget_1 = __webpack_require__(26);
 	function resolve(container) {
 	    return container.resolve(BlueHandler).then(function (handler) {
@@ -16581,13 +14845,8 @@
 	    });
 	}
 	exports.resolve = resolve;
-	function createCommand(n) {
-	    return new phosphor_command_1.SimpleCommand({
-	        handler: function (message) { console.log("COMMAND: " + message); },
-	        category: 'Blue',
-	        text: 'Blue ' + n.toString(),
-	        caption: 'Caption - blue ' + n.toString()
-	    });
+	function createHandler() {
+	    return function (message) { console.log("COMMAND: " + message); };
 	}
 	var BlueHandler = (function () {
 	    function BlueHandler(shell, commands, palette, shortcuts) {
@@ -16605,20 +14864,56 @@
 	        widget.title.text = 'Blue';
 	        this._shell.addToLeftArea(widget, { rank: 10 });
 	        var registryItems = [
-	            { id: 'blue:show-0', command: createCommand(0) },
-	            { id: 'blue:show-1', command: createCommand(1) },
-	            { id: 'blue:show-2', command: createCommand(2) },
-	            { id: 'blue:show-3', command: createCommand(3) },
-	            { id: 'blue:show-4', command: createCommand(4) },
-	            { id: 'blue:show-5', command: createCommand(5) },
+	            { id: 'blue:show-0', handler: createHandler() },
+	            { id: 'blue:show-1', handler: createHandler() },
+	            { id: 'blue:show-2', handler: createHandler() },
+	            { id: 'blue:show-3', handler: createHandler() },
+	            { id: 'blue:show-4', handler: createHandler() },
+	            { id: 'blue:show-5', handler: createHandler() },
 	        ];
 	        var paletteItems = [
-	            { id: 'blue:show-0', args: 'Blue is best!' },
-	            { id: 'blue:show-1', args: 'Blue number one' },
-	            { id: 'blue:show-2', args: 'Blue number two' },
-	            { id: 'blue:show-3', args: 'Blue number three' },
-	            { id: 'blue:show-4', args: 'Blue number four' },
-	            { id: 'blue:show-5', args: 'Blue number five' }
+	            {
+	                id: 'blue:show-0',
+	                args: 'Blue is best!',
+	                text: 'Blue 0',
+	                caption: 'Blue is best!',
+	                category: 'All Colours'
+	            },
+	            {
+	                id: 'blue:show-1',
+	                args: 'Blue number one',
+	                text: 'Blue 1',
+	                caption: 'Blue number one',
+	                category: 'Blue'
+	            },
+	            {
+	                id: 'blue:show-2',
+	                args: 'Blue number two',
+	                text: 'Blue 2',
+	                caption: 'Blue number two',
+	                category: 'Blue'
+	            },
+	            {
+	                id: 'blue:show-3',
+	                args: 'Blue number three',
+	                text: 'Blue 3',
+	                caption: 'Blue number three',
+	                category: 'Blue'
+	            },
+	            {
+	                id: 'blue:show-4',
+	                args: 'Blue number four',
+	                text: 'Blue 4',
+	                caption: 'Blue number four',
+	                category: 'Blue'
+	            },
+	            {
+	                id: 'blue:show-5',
+	                args: 'Blue number five',
+	                text: 'Blue 5',
+	                caption: 'Blue number 5',
+	                category: 'Blue'
+	            }
 	        ];
 	        var shortcutItems = [
 	            {
@@ -16638,7 +14933,7 @@
 
 
 /***/ },
-/* 91 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -16650,7 +14945,6 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
-	var phosphor_command_1 = __webpack_require__(59);
 	var phosphor_widget_1 = __webpack_require__(26);
 	function resolve(container) {
 	    return container.resolve(GreenHandler).then(function (handler) {
@@ -16658,13 +14952,8 @@
 	    });
 	}
 	exports.resolve = resolve;
-	function createCommand(n) {
-	    return new phosphor_command_1.SimpleCommand({
-	        handler: function (message) { console.log("COMMAND: " + message); },
-	        category: 'Green',
-	        text: 'Green ' + n.toString(),
-	        caption: 'Caption - green ' + n.toString()
-	    });
+	function createHandler() {
+	    return function (message) { console.log("COMMAND: " + message); };
 	}
 	var GreenHandler = (function () {
 	    function GreenHandler(shell, commands, palette, shortcuts) {
@@ -16682,20 +14971,56 @@
 	        widget.title.text = 'Green';
 	        this._shell.addToRightArea(widget, { rank: 40 });
 	        var registryItems = [
-	            { id: 'green:show-0', command: createCommand(0) },
-	            { id: 'green:show-1', command: createCommand(1) },
-	            { id: 'green:show-2', command: createCommand(2) },
-	            { id: 'green:show-3', command: createCommand(3) },
-	            { id: 'green:show-4', command: createCommand(4) },
-	            { id: 'green:show-5', command: createCommand(5) }
+	            { id: 'green:show-0', handler: createHandler() },
+	            { id: 'green:show-1', handler: createHandler() },
+	            { id: 'green:show-2', handler: createHandler() },
+	            { id: 'green:show-3', handler: createHandler() },
+	            { id: 'green:show-4', handler: createHandler() },
+	            { id: 'green:show-5', handler: createHandler() }
 	        ];
 	        var paletteItems = [
-	            { id: 'green:show-0', args: 'Green is best!' },
-	            { id: 'green:show-1', args: 'Green number one' },
-	            { id: 'green:show-2', args: 'Green number two' },
-	            { id: 'green:show-3', args: 'Green number three' },
-	            { id: 'green:show-4', args: 'Green number four' },
-	            { id: 'green:show-5', args: 'Green number five' }
+	            {
+	                id: 'green:show-0',
+	                args: 'Green is best!',
+	                text: 'Green 0',
+	                caption: 'Green is best!',
+	                category: 'Green'
+	            },
+	            {
+	                id: 'green:show-1',
+	                args: 'Green number one',
+	                text: 'Green 1',
+	                caption: 'Green number one',
+	                category: 'Green'
+	            },
+	            {
+	                id: 'green:show-2',
+	                args: 'Green number two',
+	                text: 'Green 2',
+	                caption: 'Green number two',
+	                category: 'Green'
+	            },
+	            {
+	                id: 'green:show-3',
+	                args: 'Green number three',
+	                text: 'Green 3',
+	                caption: 'Green number three',
+	                category: 'Green'
+	            },
+	            {
+	                id: 'green:show-4',
+	                args: 'Green number four',
+	                text: 'Green 4',
+	                caption: 'Green number four',
+	                category: 'Green'
+	            },
+	            {
+	                id: 'green:show-5',
+	                args: 'Green number five',
+	                text: 'Green 5',
+	                caption: 'Green number 5',
+	                category: 'Green'
+	            }
 	        ];
 	        var shortcutItems = [
 	            {
@@ -16715,7 +15040,7 @@
 
 
 /***/ },
-/* 92 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -16727,7 +15052,6 @@
 	|----------------------------------------------------------------------------*/
 	'use strict';
 	var phosphide_1 = __webpack_require__(1);
-	var phosphor_command_1 = __webpack_require__(59);
 	var phosphor_widget_1 = __webpack_require__(26);
 	function resolve(container) {
 	    return container.resolve(YellowHandler).then(function (handler) {
@@ -16735,13 +15059,8 @@
 	    });
 	}
 	exports.resolve = resolve;
-	function createCommand(n) {
-	    return new phosphor_command_1.SimpleCommand({
-	        handler: function (message) { console.log("COMMAND: " + message); },
-	        category: 'Yellow',
-	        text: 'Yellow ' + n.toString(),
-	        caption: 'Caption - yellow ' + n.toString()
-	    });
+	function createHandler() {
+	    return function (message) { console.log("COMMAND: " + message); };
 	}
 	var YellowHandler = (function () {
 	    function YellowHandler(shell, commands, palette, shortcuts) {
@@ -16759,20 +15078,56 @@
 	        widget.title.text = 'Yellow';
 	        this._shell.addToLeftArea(widget, { rank: 20 });
 	        var registryItems = [
-	            { id: 'yellow:show-0', command: createCommand(0) },
-	            { id: 'yellow:show-1', command: createCommand(1) },
-	            { id: 'yellow:show-2', command: createCommand(2) },
-	            { id: 'yellow:show-3', command: createCommand(3) },
-	            { id: 'yellow:show-4', command: createCommand(4) },
-	            { id: 'yellow:show-5', command: createCommand(5) }
+	            { id: 'yellow:show-0', handler: createHandler() },
+	            { id: 'yellow:show-1', handler: createHandler() },
+	            { id: 'yellow:show-2', handler: createHandler() },
+	            { id: 'yellow:show-3', handler: createHandler() },
+	            { id: 'yellow:show-4', handler: createHandler() },
+	            { id: 'yellow:show-5', handler: createHandler() }
 	        ];
 	        var paletteItems = [
-	            { id: 'yellow:show-0', args: 'Yellow is best!' },
-	            { id: 'yellow:show-1', args: 'Yellow number one' },
-	            { id: 'yellow:show-2', args: 'Yellow number two' },
-	            { id: 'yellow:show-3', args: 'Yellow number three' },
-	            { id: 'yellow:show-4', args: 'Yellow number four' },
-	            { id: 'yellow:show-5', args: 'Yellow number five' }
+	            {
+	                id: 'yellow:show-0',
+	                args: 'Yellow is best!',
+	                text: 'Yellow 0',
+	                caption: 'Yellow is best!',
+	                category: 'All Colours'
+	            },
+	            {
+	                id: 'yellow:show-1',
+	                args: 'Yellow number one',
+	                text: 'Yellow 1',
+	                caption: 'Yellow number one',
+	                category: 'Yellow'
+	            },
+	            {
+	                id: 'yellow:show-2',
+	                args: 'Yellow number two',
+	                text: 'Yellow 2',
+	                caption: 'Yellow number two',
+	                category: 'Yellow'
+	            },
+	            {
+	                id: 'yellow:show-3',
+	                args: 'Yellow number three',
+	                text: 'Yellow 3',
+	                caption: 'Yellow number three',
+	                category: 'Yellow'
+	            },
+	            {
+	                id: 'yellow:show-4',
+	                args: 'Yellow number four',
+	                text: 'Yellow 4',
+	                caption: 'Yellow number four',
+	                category: 'Yellow'
+	            },
+	            {
+	                id: 'yellow:show-5',
+	                args: 'Yellow number five',
+	                text: 'Yellow 5',
+	                caption: 'Yellow number five',
+	                category: 'Yellow'
+	            }
 	        ];
 	        var shortcutItems = [
 	            {
@@ -16792,7 +15147,7 @@
 
 
 /***/ },
-/* 93 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*-----------------------------------------------------------------------------
@@ -16808,11 +15163,11 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var CodeMirror = __webpack_require__(94);
+	var CodeMirror = __webpack_require__(76);
 	var phosphide_1 = __webpack_require__(1);
 	var phosphor_widget_1 = __webpack_require__(26);
-	__webpack_require__(95);
-	__webpack_require__(97);
+	__webpack_require__(77);
+	__webpack_require__(79);
 	function resolve(container) {
 	    return container.resolve(EditorHandler).then(function (handler) { handler.run(); });
 	}
@@ -16872,7 +15227,7 @@
 
 
 /***/ },
-/* 94 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -25768,13 +24123,13 @@
 
 
 /***/ },
-/* 95 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(96);
+	var content = __webpack_require__(78);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(19)(content, {});
@@ -25794,7 +24149,7 @@
 	}
 
 /***/ },
-/* 96 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(18)();
@@ -25808,7 +24163,7 @@
 
 
 /***/ },
-/* 97 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CodeMirror, copyright (c) by Marijn Haverbeke and others
@@ -25818,7 +24173,7 @@
 
 	(function(mod) {
 	  if (true) // CommonJS
-	    mod(__webpack_require__(94));
+	    mod(__webpack_require__(76));
 	  else if (typeof define == "function" && define.amd) // AMD
 	    define(["../../lib/codemirror"], mod);
 	  else // Plain browser env
